@@ -186,6 +186,14 @@
                     <p class="text-xs text-gray-400 mt-1">Generowanie rekomendacji w locie</p>
                 </div>
 
+                <!-- Opcja porównania (Pojawia się po wynikach) -->
+                <div id="ai-compare-container" class="hidden mb-4 border-b border-white/10 pb-4">
+                    <button onclick="compareProductsAI()" id="compare-btn" class="w-full bg-sensei-dark/80 hover:bg-sensei-dark border border-sensei-accent text-xs text-white py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg">
+                        ⚖️ Poproś AI o porównanie tych wyników
+                    </button>
+                    <div id="compare-result" class="hidden mt-3 p-3 bg-sensei-bg rounded-lg text-xs border border-sensei-accent/30 text-gray-200 leading-relaxed shadow-inner"></div>
+                </div>
+
                 <!-- Wyniki -->
                 <div id="results-container" class="hidden flex flex-col gap-4">
                     <!-- Wyniki generowane przez JS -->
@@ -374,6 +382,9 @@
             }
         }
 
+        // Globalny stan produktów AI (do porównywania)
+        let currentAIProducts = [];
+
         // Logika wyszukiwania AI
         function runScenario(text) {
             const input = document.getElementById('ai-search-input');
@@ -411,11 +422,19 @@
             const loadingState = document.getElementById('results-loading');
             const resultsContainer = document.getElementById('results-container');
             const searchBtn = document.getElementById('search-btn');
+            const compareContainer = document.getElementById('ai-compare-container');
+            const compareBtn = document.getElementById('compare-btn');
+            const compareResult = document.getElementById('compare-result');
 
             // Reset UI
             emptyState.classList.add('hidden');
             resultsContainer.classList.add('hidden');
+            compareContainer.classList.add('hidden');
+            compareResult.classList.add('hidden');
+            compareBtn.classList.remove('hidden');
+            compareBtn.innerHTML = '⚖️ Poproś AI o porównanie tych wyników';
             resultsContainer.innerHTML = '';
+            currentAIProducts = []; // reset stanu
             
             // Pokaż ładowanie i zablokuj przycisk
             loadingState.classList.remove('hidden');
@@ -467,9 +486,15 @@
                 if (!responseText) throw new Error("Pusta odpowiedź z API");
 
                 const aiData = JSON.parse(responseText);
+                currentAIProducts = aiData.products; // Zachowujemy stan dla porównywarki
                 
                 // Renderowanie wyników z Gemini
                 displayAIResults(aiData);
+                
+                // Pokaż moduł porównywarki jeśli znaleziono produkty
+                if(currentAIProducts.length > 1) {
+                    compareContainer.classList.remove('hidden');
+                }
 
             } catch (error) {
                 console.error("Błąd API Gemini, używanie fallbacku:", error);
@@ -504,11 +529,16 @@
                             </div>
                         </div>
                     </div>
-                    <div class="mt-3 pt-3 border-t border-white/10">
-                        <button onclick="analyzeReviews(this, '${item.title.replace(/'/g, "\\'")}')" class="text-[11px] text-sensei-accent hover:text-white flex items-center gap-1 transition-colors w-full justify-center bg-black/20 hover:bg-sensei-light/30 py-1.5 rounded-lg border border-sensei-accent/30">
-                            ✨ Analizuj opinie o produkcie
+                    <div class="mt-3 pt-3 border-t border-white/10 flex flex-col gap-1.5">
+                        <button onclick="analyzeReviews(this, '${item.title.replace(/'/g, "\\'")}')" class="text-[11px] text-gray-300 hover:text-white flex items-center gap-1 transition-colors w-full justify-center bg-black/20 hover:bg-sensei-light/30 py-1.5 rounded-lg border border-white/10 hover:border-sensei-light/50">
+                            ✨ Analizuj opinie
                         </button>
-                        <div class="analysis-result hidden mt-2 text-xs bg-black/40 p-2.5 rounded-lg border border-white/5 shadow-inner"></div>
+                        <div class="analysis-result hidden text-xs bg-black/40 p-2.5 rounded-lg border border-white/5 shadow-inner"></div>
+                        
+                        <button onclick="findCheaperAlternative(this, '${item.title.replace(/'/g, "\\'")}', '${item.price}')" class="text-[11px] text-sensei-accent hover:text-white flex items-center gap-1 transition-colors w-full justify-center bg-black/20 hover:bg-sensei-accent/30 py-1.5 rounded-lg border border-sensei-accent/20">
+                            💸 Znajdź tańszy zamiennik (AI)
+                        </button>
+                        <div class="alternative-result hidden text-xs bg-sensei-bg p-2.5 rounded-lg border border-sensei-accent/30 shadow-inner text-gray-200"></div>
                     </div>
                 </div>
             `).join('');
@@ -640,6 +670,77 @@
             } catch (e) {
                 console.error("Błąd analizy:", e);
                 btn.innerHTML = `❌ Błąd analizy. Spróbuj ponownie.`;
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+            }
+        }
+
+        // NOWA FUNKCJA 1: Porównywarka Wyników
+        async function compareProductsAI() {
+            if (currentAIProducts.length < 2) return;
+            
+            const btn = document.getElementById('compare-btn');
+            const resDiv = document.getElementById('compare-result');
+            
+            btn.innerHTML = `<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> AI analizuje ofertę...`;
+            btn.disabled = true;
+
+            const productsList = currentAIProducts.map(p => `- ${p.title} (${p.price})`).join("\n");
+            const payload = {
+                contents: [{ parts: [{ text: `Jako ekspert e-commerce zrób błyskawiczne, 3-zdaniowe porównanie tych produktów. Na koniec wskaż obiektywnego faworyta pod kątem opłacalności (najlepszy stosunek ceny do jakości). Oto lista:\n${productsList}` }] }]
+            };
+
+            try {
+                const result = await fetchWithRetry(geminiUrl, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload) });
+                const comparisonText = result.candidates[0].content.parts[0].text;
+                
+                btn.classList.add('hidden');
+                resDiv.classList.remove('hidden');
+                resDiv.innerHTML = `<div class="font-bold text-sensei-accent mb-2 flex items-center gap-1.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Werdykt AI</div>${comparisonText.replace(/\n/g, '<br>')}`;
+            } catch (e) {
+                console.error("Błąd porównania:", e);
+                btn.innerHTML = `❌ Błąd porównywarki. Spróbuj ponownie.`;
+                btn.disabled = false;
+            }
+        }
+
+        // NOWA FUNKCJA 2: Szukanie tańszych zamienników
+        async function findCheaperAlternative(btn, title, price) {
+            const container = btn.nextElementSibling;
+            btn.innerHTML = `<svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Szukanie tańszej opcji...`;
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+
+            const payload = {
+                contents: [{ parts: [{ text: `Zaproponuj jeden powszechnie znany, tańszy i sensowny zamiennik dla produktu "${title}" (który kosztuje około ${price}).` }] }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            altTitle: { type: "STRING", description: "Nazwa tańszego zamiennika" },
+                            altPrice: { type: "STRING", description: "Szacowana cena, np. 99,00 zł" },
+                            reason: { type: "STRING", description: "Krótkie wyjaśnienie dlaczego warto rozważyć ten kompromis (1 zdanie)" }
+                        },
+                        required: ["altTitle", "altPrice", "reason"]
+                    }
+                }
+            };
+
+            try {
+                const result = await fetchWithRetry(geminiUrl, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload) });
+                const aiData = JSON.parse(result.candidates[0].content.parts[0].text);
+
+                btn.classList.add('hidden');
+                container.classList.remove('hidden');
+                container.innerHTML = `
+                    <div class="text-sensei-accent font-bold mb-1">💸 Alternatywa: ${aiData.altTitle}</div>
+                    <div class="text-white font-bold mb-1.5">${aiData.altPrice}</div>
+                    <div class="text-gray-400 italic text-[10px] leading-tight">"${aiData.reason}"</div>
+                `;
+            } catch (e) {
+                console.error("Błąd szukania zamiennika:", e);
+                btn.innerHTML = `❌ Błąd API. Spróbuj ponownie.`;
                 btn.disabled = false;
                 btn.classList.remove('opacity-50');
             }
