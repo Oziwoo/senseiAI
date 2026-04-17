@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sensei AI - MVP Demo</title>
+    <!-- Tailwind CSS dla szybkiego i nowoczesnego stylowania -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        sensei: {
+                            dark: '#2D4A1E',
+                            light: '#4A7C2F',
+                            bg: '#1a2e11',
+                            accent: '#65a340'
+                        },
+                        shop: {
+                            bg: '#f3f4f6',
+                            primary: '#ff5a00' // Kolor ala Allegro
+                        }
+                    },
+                    animation: {
+                        'spin-slow': 'spin 1.5s linear infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar dla panelu Sensei */
+        .sensei-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .sensei-scroll::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1); 
+        }
+        .sensei-scroll::-webkit-scrollbar-thumb {
+            background: #4A7C2F; 
+            border-radius: 10px;
+        }
+        
+        /* Animacje wysuwania */
+        .slide-in {
+            transform: translateX(0%);
+        }
+        .slide-out {
+            transform: translateX(100%);
+        }
+
+        /* Subtelne tło gradientowe dla panelu */
+        .sensei-panel-bg {
+            background: linear-gradient(145deg, #2D4A1E 0%, #1a2e11 100%);
+        }
+    </style>
+</head>
+<body class="bg-shop-bg text-gray-800 font-sans overflow-hidden h-screen w-screen relative selection:bg-sensei-light selection:text-white">
+
+    <!-- ========================================== -->
+    <!-- 1. SYMULACJA STRONY SKLEPU (TŁO)          -->
+    <!-- ========================================== -->
+    <div id="shop-background" class="h-full w-full overflow-y-auto transition-all duration-500 pr-0">
+        <!-- Header Sklepu -->
+        <header class="bg-white shadow-sm sticky top-0 z-10">
+            <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="w-10 h-10 bg-shop-primary rounded-lg flex items-center justify-center text-white font-bold text-xl">e</div>
+                    <span class="text-2xl font-bold text-shop-primary tracking-tight">e-Sklep</span>
+                </div>
+                <div class="flex-1 max-w-2xl mx-8 relative">
+                    <input type="text" placeholder="Czego szukasz?" class="w-full border-2 border-shop-primary rounded-full py-2 px-6 focus:outline-none text-sm">
+                    <button class="absolute right-1 top-1 bg-shop-primary text-white rounded-full px-6 py-1.5 text-sm font-semibold">Szukaj</button>
+                </div>
+                <div class="flex items-center gap-6 text-gray-600">
+                    <div class="flex flex-col items-center cursor-pointer hover:text-shop-primary">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                        <span class="text-xs mt-1">Konto</span>
+                    </div>
+                    <div class="flex flex-col items-center cursor-pointer hover:text-shop-primary relative">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        <span class="absolute -top-2 -right-2 bg-shop-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
+                        <span class="text-xs mt-1">Koszyk</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Sklepu -->
+        <main class="max-w-7xl mx-auto px-4 py-8">
+            <h1 class="text-2xl font-bold mb-6">Polecane dla Ciebie</h1>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6" id="shop-products-grid">
+                <!-- Produkty sklepu generowane przez JS -->
+            </div>
+        </main>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 2. PRZYCISK SYMULUJĄCY IKONĘ ROZSZERZENIA  -->
+    <!-- ========================================== -->
+    <button onclick="toggleExtension()" id="ext-trigger-btn" class="fixed right-6 bottom-6 w-16 h-16 bg-sensei-dark rounded-full shadow-2xl flex items-center justify-center cursor-pointer hover:scale-110 transition-transform z-50 group border-2 border-sensei-light">
+        <svg class="w-8 h-8 text-white group-hover:animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+        <div class="absolute -top-3 -right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow">Sensei AI</div>
+    </button>
+
+    <!-- ========================================== -->
+    <!-- 3. OVERLAY ROZSZERZENIA SENSEI AI          -->
+    <!-- ========================================== -->
+    <aside id="sensei-panel" class="fixed top-0 right-0 h-full w-[400px] sensei-panel-bg shadow-2xl z-40 slide-out transition-transform duration-500 flex flex-col border-l border-sensei-light/30 text-white">
+        
+        <!-- Header Sensei -->
+        <div class="px-5 py-4 border-b border-white/10 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-sensei-light to-sensei-accent flex items-center justify-center shadow-lg">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+                <h2 class="font-bold text-xl tracking-wide font-sans">Sensei <span class="text-sensei-accent font-light">AI</span></h2>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="togglePitchModal()" class="text-xs bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-md transition-colors text-white/90">
+                    O projekcie
+                </button>
+                <button onclick="toggleExtension()" class="text-white/50 hover:text-white transition-colors p-1">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Główna zawartość -->
+        <div class="flex-1 overflow-y-auto sensei-scroll p-5 flex flex-col gap-6">
+            
+            <!-- Opis / Wprowadzenie -->
+            <div>
+                <p class="text-sm text-gray-300 leading-relaxed">
+                    Opisz produkt własnymi słowami. Znajdę dla Ciebie najlepsze dopasowania bez potrzeby wpisywania dokładnych nazw.
+                </p>
+            </div>
+
+            <!-- Gotowe scenariusze (Skróty do dema) -->
+            <div class="space-y-2">
+                <p class="text-[11px] uppercase tracking-wider text-sensei-light font-semibold">Gotowe scenariusze (kliknij):</p>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="runScenario('wygodne buty do biegania wodoodporne do 200 zł')" class="text-left text-xs bg-black/20 hover:bg-sensei-light/30 border border-sensei-light/20 px-3 py-2 rounded-lg transition-colors leading-tight">
+                        🏃‍♂️ Wygodne buty do biegania wodoodporne do 200 zł
+                    </button>
+                    <button onclick="runScenario('lekkie słuchawki bezprzewodowe do ćwiczeń')" class="text-left text-xs bg-black/20 hover:bg-sensei-light/30 border border-sensei-light/20 px-3 py-2 rounded-lg transition-colors leading-tight">
+                        🎧 Lekkie słuchawki bezprzewodowe do ćwiczeń
+                    </button>
+                    <button onclick="runScenario('prezent dla dziewczyny do 100 zł romantyczny')" class="text-left text-xs bg-black/20 hover:bg-sensei-light/30 border border-sensei-light/20 px-3 py-2 rounded-lg transition-colors leading-tight">
+                        🎁 Prezent dla dziewczyny do 100 zł romantyczny
+                    </button>
+                </div>
+            </div>
+
+            <!-- Pole wyszukiwania -->
+            <div class="relative mt-2">
+                <textarea id="ai-search-input" rows="3" placeholder="Np. szukam lekkiej kurtki na wiosnę, czarnej, z kapturem..." class="w-full bg-black/30 border border-white/20 rounded-xl py-3 px-4 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-sensei-light focus:ring-1 focus:ring-sensei-light resize-none transition-all"></textarea>
+                <button onclick="triggerSearch()" id="search-btn" class="absolute bottom-3 right-3 bg-sensei-light hover:bg-sensei-accent text-white rounded-lg px-3 py-2 transition-colors flex items-center justify-center shadow-lg group">
+                    <span class="mr-2 text-xs font-bold">✨ Szukaj AI</span>
+                    <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </button>
+            </div>
+            <div class="flex justify-start px-1 mt-1 mb-4">
+                <button onclick="enhancePrompt()" id="enhance-btn" class="text-[11px] text-sensei-accent hover:text-white hover:underline transition-colors flex items-center gap-1">
+                    ✨ AI: Pomóż mi opisać produkt
+                </button>
+            </div>
+
+            <!-- Obszar wyników -->
+            <div class="flex-1 bg-black/20 rounded-xl border border-white/10 p-4 min-h-[250px] relative">
+                
+                <!-- Stan pusty -->
+                <div id="results-empty" class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 opacity-50">
+                    <svg class="w-12 h-12 mb-3 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <p class="text-sm">Wyniki wyszukiwania pojawią się tutaj.</p>
+                </div>
+
+                <!-- Ładowanie (Spinner) -->
+                <div id="results-loading" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-sensei-bg/80 backdrop-blur-sm rounded-xl z-10">
+                    <svg class="w-10 h-10 text-sensei-accent animate-spin-slow mb-4" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p class="text-sm font-medium text-sensei-accent animate-pulse">✨ Gemini AI analizuje opis...</p>
+                    <p class="text-xs text-gray-400 mt-1">Generowanie rekomendacji w locie</p>
+                </div>
+
+                <!-- Wyniki -->
+                <div id="results-container" class="hidden flex flex-col gap-4">
+                    <!-- Wyniki generowane przez JS -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer Sensei -->
+        <div class="px-5 py-3 border-t border-white/10 bg-black/20 text-center">
+            <p class="text-[10px] text-gray-400">Powered by Sensei AI Engine v1.0 MVP</p>
+        </div>
+    </aside>
+
+    <!-- ========================================== -->
+    <!-- 4. MODAL "O PROJEKCIE" (PITCH NA ZAJĘCIA)  -->
+    <!-- ========================================== -->
+    <div id="pitch-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]" id="pitch-modal-content">
+            <!-- Header -->
+            <div class="bg-sensei-dark text-white px-6 py-5 flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold">Sensei AI</h2>
+                    <p class="text-sensei-accent text-sm font-medium mt-1">"Opisz produkt – znajdziemy go za Ciebie"</p>
+                </div>
+                <button onclick="togglePitchModal()" class="text-white/70 hover:text-white hover:bg-white/10 rounded-full p-2 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <!-- Body -->
+            <div class="p-6 md:p-8 overflow-y-auto text-gray-800">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Kolumna Lewa -->
+                    <div class="space-y-6">
+                        <div>
+                            <h3 class="text-xs uppercase font-bold text-gray-400 tracking-wider mb-2">🔴 Problem</h3>
+                            <p class="text-sm leading-relaxed bg-red-50 p-3 rounded-lg border border-red-100">
+                                Obecne wyszukiwarki w sklepach internetowych są sztywne – wymagają podawania dokładnych nazw produktów lub przedzierania się przez dziesiątki filtrów. Nie rozumieją intencji ani języka naturalnego użytkownika.
+                            </p>
+                        </div>
+                        <div>
+                            <h3 class="text-xs uppercase font-bold text-gray-400 tracking-wider mb-2">🟢 Rozwiązanie</h3>
+                            <p class="text-sm leading-relaxed bg-green-50 p-3 rounded-lg border border-green-100">
+                                Rozszerzenie do przeglądarki (Chrome), które działa jako nakładka na najpopularniejsze sklepy e-commerce. Przetwarza opisy pisane ludzkim językiem na precyzyjne zapytania i od razu serwuje dopasowane wyniki z danego sklepu.
+                            </p>
+                        </div>
+                        <div>
+                            <h3 class="text-xs uppercase font-bold text-gray-400 tracking-wider mb-2">🎯 Grupa Docelowa</h3>
+                            <p class="text-sm text-gray-600 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-sensei-light" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                Kupujący online w wieku 18-35 lat (głównie desktop).
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Kolumna Prawa -->
+                    <div class="space-y-6">
+                        <div>
+                            <h3 class="text-xs uppercase font-bold text-gray-400 tracking-wider mb-2">💼 Model Biznesowy</h3>
+                            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3">
+                                <div class="flex justify-between items-center pb-2 border-b border-gray-200">
+                                    <span class="font-semibold text-sm">Freemium</span>
+                                    <span class="bg-gray-200 text-xs px-2 py-1 rounded font-bold">Darmowe</span>
+                                </div>
+                                <p class="text-xs text-gray-500">Do 20 wyszukań AI dziennie za darmo.</p>
+                                
+                                <div class="flex justify-between items-center pt-2">
+                                    <span class="font-semibold text-sm text-sensei-dark">Sensei Premium</span>
+                                    <span class="bg-sensei-light text-white text-xs px-2 py-1 rounded font-bold">9 PLN / mies.</span>
+                                </div>
+                                <p class="text-xs text-gray-500">Nielimitowane wyszukiwania, alerty cenowe, analiza opinii produktowych.</p>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-xs uppercase font-bold text-gray-400 tracking-wider mb-2">👥 Zespół (Founders)</h3>
+                            <ul class="text-sm text-gray-700 space-y-2 font-medium">
+                                <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-sensei-light"></div> Melania Leonkova</li>
+                                <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-sensei-light"></div> Kyrylo Maidanyk</li>
+                                <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-sensei-light"></div> Alisa Tykha</li>
+                                <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-sensei-light"></div> Andrii Shatilov</li>
+                                <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-sensei-light"></div> Katsiaryna Maslouskaya</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- LOGIKA JAVASCRIPT (MVP)                    -->
+    <!-- ========================================== -->
+    <script>
+        // --- DANE DLA SKLEPU W TLE ---
+        const backgroundProducts = [
+            { name: "Smartfon X Pro 128GB", price: "2499,00 zł", img: "https://placehold.co/300x200/e2e8f0/64748b?text=Smartfon" },
+            { name: "Laptop biurowy 15.6\"", price: "1899,00 zł", img: "https://placehold.co/300x200/e2e8f0/64748b?text=Laptop" },
+            { name: "Słuchawki nauszne Basic", price: "99,00 zł", img: "https://placehold.co/300x200/e2e8f0/64748b?text=Słuchawki" },
+            { name: "Myszka bezprzewodowa", price: "45,00 zł", img: "https://placehold.co/300x200/e2e8f0/64748b?text=Myszka" },
+            { name: "Klawiatura mechaniczna", price: "299,00 zł", img: "https://placehold.co/300x200/e2e8f0/64748b?text=Klawiatura" },
+            { name: "Monitor 24 cale FHD", price: "549,00 zł", img: "https://placehold.co/300x200/e2e8f0/64748b?text=Monitor" },
+            { name: "Powerbank 20000mAh", price: "120,00 zł", img: "https://placehold.co/300x200/e2e8f0/64748b?text=Powerbank" },
+            { name: "Kabel USB-C 2m", price: "25,00 zł", img: "https://placehold.co/300x200/e2e8f0/64748b?text=Kabel+USB" },
+        ];
+
+        // --- BAZA DANYCH SENSEI AI (HARDCODED MVP) ---
+        const db = {
+            shoes: [
+                { title: "Kalenji Run Active - Męskie", price: "149,99 zł", store: "e-Sklep (Allegro)", img: "https://placehold.co/150x150/2D4A1E/ffffff?text=Buty+1" },
+                { title: "Kiprun KS500 Wodoodporne", price: "199,00 zł", store: "Decathlon", img: "https://placehold.co/150x150/2D4A1E/ffffff?text=Buty+2" },
+                { title: "Asics Gel-Venture 8 WR", price: "185,00 zł", store: "eobuwie", img: "https://placehold.co/150x150/2D4A1E/ffffff?text=Buty+3" }
+            ],
+            audio: [
+                { title: "JBL Tune 510BT Lekkie", price: "169,00 zł", store: "e-Sklep", img: "https://placehold.co/150x150/1a2e11/ffffff?text=Słuchawki+1" },
+                { title: "Sony WH-CH520", price: "189,00 zł", store: "MediaExpert", img: "https://placehold.co/150x150/1a2e11/ffffff?text=Słuchawki+2" },
+                { title: "Soundcore Life Q20", price: "219,00 zł", store: "Amazon.pl", img: "https://placehold.co/150x150/1a2e11/ffffff?text=Słuchawki+3" },
+                { title: "Baseus Bowie H1 ANC", price: "155,00 zł", store: "Allegro", img: "https://placehold.co/150x150/1a2e11/ffffff?text=Słuchawki+4" }
+            ],
+            gift: [
+                { title: "Zestaw naturalnych świec sojowych", price: "89,00 zł", store: "Allegro", img: "https://placehold.co/150x150/e83a59/ffffff?text=Świece" },
+                { title: "Srebrny naszyjnik z grawerem", price: "99,00 zł", store: "Apart", img: "https://placehold.co/150x150/e83a59/ffffff?text=Naszyjnik" },
+                { title: "Voucher na masaż relaksacyjny", price: "100,00 zł", store: "WyjątkowyPrezent", img: "https://placehold.co/150x150/e83a59/ffffff?text=Voucher" }
+            ],
+            fallback: [
+                { title: "Bestseller tygodnia - kubek termiczny", price: "45,00 zł", store: "e-Sklep", img: "https://placehold.co/150x150/333/fff?text=Produkt+1" },
+                { title: "Książka: Jak działa AI?", price: "39,00 zł", store: "Empik", img: "https://placehold.co/150x150/333/fff?text=Książka" }
+            ]
+        };
+
+        // Renderowanie tła sklepu
+        function renderShopBackground() {
+            const grid = document.getElementById('shop-products-grid');
+            grid.innerHTML = backgroundProducts.map(p => `
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer">
+                    <img src="${p.img}" alt="${p.name}" class="w-full h-40 object-cover rounded-lg mb-3">
+                    <h3 class="font-medium text-sm text-gray-800 line-clamp-2">${p.name}</h3>
+                    <p class="text-shop-primary font-bold mt-2">${p.price}</p>
+                </div>
+            `).join('');
+        }
+
+        // Kontrola Extension Panelu
+        let isExtensionOpen = false;
+        function toggleExtension() {
+            const panel = document.getElementById('sensei-panel');
+            const bg = document.getElementById('shop-background');
+            const btn = document.getElementById('ext-trigger-btn');
+            
+            isExtensionOpen = !isExtensionOpen;
+            
+            if (isExtensionOpen) {
+                panel.classList.remove('slide-out');
+                panel.classList.add('slide-in');
+                // Delikatne przesunięcie tła sklepu i blur dla lepszego efektu
+                bg.style.paddingRight = "400px";
+                bg.style.opacity = "0.6";
+                bg.style.filter = "blur(2px)";
+                btn.style.transform = "scale(0)"; // ukryj przycisk pływający
+            } else {
+                panel.classList.remove('slide-in');
+                panel.classList.add('slide-out');
+                bg.style.paddingRight = "0";
+                bg.style.opacity = "1";
+                bg.style.filter = "blur(0)";
+                btn.style.transform = "scale(1)"; // pokaż przycisk
+            }
+        }
+
+        // Kontrola Modala Pitch Deck
+        function togglePitchModal() {
+            const modal = document.getElementById('pitch-modal');
+            const content = document.getElementById('pitch-modal-content');
+            
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    content.classList.remove('scale-95');
+                }, 10);
+            } else {
+                modal.classList.add('opacity-0');
+                content.classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
+            }
+        }
+
+        // Logika wyszukiwania AI
+        function runScenario(text) {
+            const input = document.getElementById('ai-search-input');
+            input.value = text;
+            triggerSearch();
+        }
+
+        const apiKey = "";
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+        async function fetchWithRetry(url, options, maxRetries = 5) {
+            const delays = [1000, 2000, 4000, 8000, 16000];
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return await response.json();
+                } catch (e) {
+                    if (i === maxRetries - 1) throw e;
+                    await new Promise(resolve => setTimeout(resolve, delays[i]));
+                }
+            }
+        }
+
+        async function triggerSearch() {
+            const input = document.getElementById('ai-search-input');
+            const query = input.value.trim();
+            
+            if (!query) return;
+
+            // Elementy UI
+            const emptyState = document.getElementById('results-empty');
+            const loadingState = document.getElementById('results-loading');
+            const resultsContainer = document.getElementById('results-container');
+            const searchBtn = document.getElementById('search-btn');
+
+            // Reset UI
+            emptyState.classList.add('hidden');
+            resultsContainer.classList.add('hidden');
+            resultsContainer.innerHTML = '';
+            
+            // Pokaż ładowanie i zablokuj przycisk
+            loadingState.classList.remove('hidden');
+            searchBtn.disabled = true;
+            searchBtn.classList.add('opacity-50');
+
+            try {
+                // Konfiguracja zapytania do Gemini
+                const payload = {
+                    contents: [{ parts: [{ text: query }] }],
+                    systemInstruction: { 
+                        parts: [{ 
+                            text: "Jesteś asystentem zakupowym AI o nazwie Sensei AI. Użytkownik podaje opis poszukiwanego produktu. Wygeneruj 3-4 sensowne rekomendacje odpowiadające dokładnie jego wytycznym. Wymyśl realistyczne nazwy produktów, odpowiednie ramy cenowe i przypisz je do pasujących sklepów (np. e-Sklep, Allegro, Amazon). W polu 'imgText' podaj 1 lub 2 słowa, które będą służyć jako placeholder zdjęcia. W polu 'reason' zamieść jedno krótkie zdanie wyjaśniające, dlaczego ten konkretny produkt pasuje do opisu (zwracaj się do użytkownika w 2. osobie)." 
+                        }] 
+                    },
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                summary: { type: "STRING", description: "Krótkie, przyjazne podsumowanie tego, co znalazłeś dla użytkownika (jedno zdanie)." },
+                                products: {
+                                    type: "ARRAY",
+                                    items: {
+                                        type: "OBJECT",
+                                        properties: {
+                                            title: { type: "STRING" },
+                                            price: { type: "STRING", description: "np. 149,99 zł" },
+                                            store: { type: "STRING" },
+                                            imgText: { type: "STRING" },
+                                            reason: { type: "STRING", description: "np. Posiada wodoodporną membranę i mieści się w Twoim budżecie." }
+                                        },
+                                        required: ["title", "price", "store", "imgText", "reason"]
+                                    }
+                                }
+                            },
+                            required: ["summary", "products"]
+                        }
+                    }
+                };
+
+                const result = await fetchWithRetry(geminiUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                const responseText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!responseText) throw new Error("Pusta odpowiedź z API");
+
+                const aiData = JSON.parse(responseText);
+                
+                // Renderowanie wyników z Gemini
+                displayAIResults(aiData);
+
+            } catch (error) {
+                console.error("Błąd API Gemini, używanie fallbacku:", error);
+                // Użyj starej logiki w razie błędu API lub braku klucza
+                displayFallbackResults(query.toLowerCase());
+            } finally {
+                loadingState.classList.add('hidden');
+                searchBtn.disabled = false;
+                searchBtn.classList.remove('opacity-50');
+                resultsContainer.classList.remove('hidden');
+            }
+        }
+
+        function displayAIResults(data) {
+            const resultsContainer = document.getElementById('results-container');
+            
+            const html = data.products.map(item => `
+                <div class="bg-black/30 rounded-lg p-3 flex flex-col border border-white/5 hover:border-sensei-light/50 transition-colors group">
+                    <div class="flex gap-4">
+                        <img src="https://placehold.co/150x150/2D4A1E/ffffff?text=${encodeURIComponent(item.imgText)}" alt="${item.title}" class="w-20 h-20 rounded object-cover shadow-md bg-white/10 shrink-0">
+                        <div class="flex-1 flex flex-col justify-between">
+                            <div>
+                                <h4 class="text-sm font-semibold leading-tight mb-1 group-hover:text-sensei-accent transition-colors">${item.title}</h4>
+                                <span class="text-[10px] bg-white/10 text-gray-300 px-2 py-0.5 rounded-full inline-block border border-white/5 mb-2">${item.store}</span>
+                                <p class="text-xs text-gray-400 italic leading-snug">✨ ${item.reason}</p>
+                            </div>
+                            <div class="flex items-end justify-between mt-2">
+                                <span class="font-bold text-sensei-accent text-sm">${item.price}</span>
+                                <button class="text-[10px] uppercase tracking-wider font-bold bg-white/10 hover:bg-sensei-light px-3 py-1.5 rounded transition-colors">
+                                    Zobacz
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-white/10">
+                        <button onclick="analyzeReviews(this, '${item.title.replace(/'/g, "\\'")}')" class="text-[11px] text-sensei-accent hover:text-white flex items-center gap-1 transition-colors w-full justify-center bg-black/20 hover:bg-sensei-light/30 py-1.5 rounded-lg border border-sensei-accent/30">
+                            ✨ Analizuj opinie o produkcie
+                        </button>
+                        <div class="analysis-result hidden mt-2 text-xs bg-black/40 p-2.5 rounded-lg border border-white/5 shadow-inner"></div>
+                    </div>
+                </div>
+            `).join('');
+
+            resultsContainer.innerHTML = `
+                <div class="text-xs text-sensei-accent flex flex-col gap-1.5 pb-3 border-b border-white/10 mb-2">
+                    <div class="flex items-center gap-1.5 font-bold uppercase tracking-wider text-[10px]">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        Analiza Gemini
+                    </div>
+                    <span class="text-gray-300 text-sm leading-snug">${data.summary}</span>
+                </div>
+                ${html}
+            `;
+        }
+
+        function displayFallbackResults(query) {
+            const resultsContainer = document.getElementById('results-container');
+            let results = db.fallback;
+
+            // Prosta heurystyka dopasowania (MVP)
+            if (query.includes('buty') || query.includes('biegania')) {
+                results = db.shoes;
+            } else if (query.includes('słuchawki') || query.includes('audio')) {
+                results = db.audio;
+            } else if (query.includes('prezent') || query.includes('dziewczyny')) {
+                results = db.gift;
+            }
+
+            // Renderowanie wyników do HTML
+            resultsContainer.innerHTML = results.map(item => `
+                <div class="bg-black/30 rounded-lg p-3 flex gap-4 border border-white/5 hover:border-sensei-light/50 transition-colors group">
+                    <img src="${item.img}" alt="${item.title}" class="w-20 h-20 rounded object-cover shadow-md bg-white/10 shrink-0">
+                    <div class="flex-1 flex flex-col justify-between">
+                        <div>
+                            <h4 class="text-sm font-semibold leading-tight mb-1 group-hover:text-sensei-accent transition-colors">${item.title}</h4>
+                            <span class="text-[10px] bg-white/10 text-gray-300 px-2 py-0.5 rounded-full inline-block border border-white/5">${item.store}</span>
+                        </div>
+                        <div class="flex items-end justify-between mt-2">
+                            <span class="font-bold text-sensei-accent text-sm">${item.price}</span>
+                            <button class="text-[10px] uppercase tracking-wider font-bold bg-white/10 hover:bg-sensei-light px-3 py-1.5 rounded transition-colors">
+                                Zobacz
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Dodaj informację o dopasowaniu AI na górze
+            resultsContainer.insertAdjacentHTML('afterbegin', `
+                <div class="text-xs text-sensei-accent flex items-center gap-1.5 pb-2 border-b border-white/10 mb-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Znaleziono ${results.length} dopasowania do Twojego opisu
+                </div>
+            `);
+        }
+
+        // --- NOWE FUNKCJE GEMINI API ---
+
+        async function enhancePrompt() {
+            const input = document.getElementById('ai-search-input');
+            const query = input.value.trim();
+            
+            if (!query) {
+                input.placeholder = "Najpierw wpisz kilka słów, np. 'słuchawki do biegania'...";
+                return;
+            }
+
+            const enhanceBtn = document.getElementById('enhance-btn');
+            const originalText = enhanceBtn.innerHTML;
+            enhanceBtn.innerHTML = `✨ Trwa ulepszanie zapytania...`;
+            enhanceBtn.disabled = true;
+            enhanceBtn.classList.add('opacity-50');
+
+            const payload = {
+                contents: [{ parts: [{ text: `Rozbuduj poniższe zapytanie zakupowe tak, aby było bardzo precyzyjne i szczegółowe. Zgadnij intencję użytkownika i dodaj przydatne parametry (np. jakość, wygoda, materiał). Zachowaj naturalny, potoczny język, jakby to pisał człowiek. Zwróć SAM tekst zapytania bez żadnych wstępów. Zapytanie: "${query}"` }] }]
+            };
+
+            try {
+                const result = await fetchWithRetry(geminiUrl, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload) });
+                const improvedText = result.candidates[0].content.parts[0].text.trim();
+                input.value = improvedText;
+            } catch (e) {
+                console.error("Błąd poprawy zapytania:", e);
+            } finally {
+                enhanceBtn.innerHTML = originalText;
+                enhanceBtn.disabled = false;
+                enhanceBtn.classList.remove('opacity-50');
+            }
+        }
+
+        async function analyzeReviews(btn, title) {
+            const container = btn.nextElementSibling;
+            btn.innerHTML = `<svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Analizowanie opinii...`;
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+
+            const payload = {
+                contents: [{ parts: [{ text: `Przeanalizuj produkt: "${title}". Jesteś niezależnym ekspertem e-commerce. Wymyśl realistyczne podsumowanie opinii klientów o tym przedmiocie.` }] }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            rating: { type: "NUMBER", description: "Ocena od 1 do 5, np. 4.7" },
+                            pros: { type: "ARRAY", items: { type: "STRING" }, description: "Max 2 krótkie zalety" },
+                            cons: { type: "ARRAY", items: { type: "STRING" }, description: "Max 1 krótka wada" },
+                            summary: { type: "STRING", description: "Krótkie, jednozdaniowe podsumowanie werdyktu." }
+                        },
+                        required: ["rating", "pros", "cons", "summary"]
+                    }
+                }
+            };
+
+            try {
+                const result = await fetchWithRetry(geminiUrl, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload) });
+                const aiData = JSON.parse(result.candidates[0].content.parts[0].text);
+
+                btn.classList.add('hidden');
+                container.classList.remove('hidden');
+                container.innerHTML = `
+                    <div class="flex items-center gap-1 mb-1.5 font-bold text-yellow-500">★ ${aiData.rating} / 5.0</div>
+                    <ul class="text-green-400 space-y-0.5 mb-1.5">
+                        ${aiData.pros.map(p => `<li>+ ${p}</li>`).join('')}
+                    </ul>
+                    <div class="text-red-400 mb-2">- ${aiData.cons[0]}</div>
+                    <div class="text-gray-300 text-[10px] italic border-t border-white/10 pt-1.5">"${aiData.summary}"</div>
+                `;
+            } catch (e) {
+                console.error("Błąd analizy:", e);
+                btn.innerHTML = `❌ Błąd analizy. Spróbuj ponownie.`;
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+            }
+        }
+
+        // Inicjalizacja
+        window.onload = () => {
+            renderShopBackground();
+            
+            // Obsługa klawisza Enter w polu textarea
+            document.getElementById('ai-search-input').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    triggerSearch();
+                }
+            });
+            
+            // Zamknij modal klikając w tło
+            document.getElementById('pitch-modal').addEventListener('click', function(e) {
+                if(e.target === this) togglePitchModal();
+            });
+        };
+    </script>
+</body>
+</html>
