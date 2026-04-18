@@ -89,8 +89,18 @@
 
         <!-- Main Content Sklepu -->
         <main class="max-w-7xl mx-auto px-4 py-8">
-            <h1 class="text-2xl font-bold mb-6">Polecane dla Ciebie</h1>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6" id="shop-products-grid">
+            <h1 class="text-2xl font-bold mb-4">Polecane dla Ciebie</h1>
+            
+            <!-- NOWOŚĆ: KATEGORIE (ZAKŁADKI) SKLEPU -->
+            <div class="flex gap-6 mb-6 border-b border-gray-200" id="category-tabs">
+                <button onclick="filterShop('all')" id="tab-all" class="shop-tab pb-2 text-sm font-bold text-shop-primary border-b-2 border-shop-primary">Wszystko</button>
+                <button onclick="filterShop('laptopy')" id="tab-laptopy" class="shop-tab pb-2 text-sm font-medium text-gray-500 hover:text-shop-primary border-b-2 border-transparent">Laptopy</button>
+                <button onclick="filterShop('telefony')" id="tab-telefony" class="shop-tab pb-2 text-sm font-medium text-gray-500 hover:text-shop-primary border-b-2 border-transparent">Telefony</button>
+                <button onclick="filterShop('audio')" id="tab-audio" class="shop-tab pb-2 text-sm font-medium text-gray-500 hover:text-shop-primary border-b-2 border-transparent">Audio</button>
+                <button onclick="filterShop('akcesoria')" id="tab-akcesoria" class="shop-tab pb-2 text-sm font-medium text-gray-500 hover:text-shop-primary border-b-2 border-transparent">Akcesoria</button>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 transition-opacity duration-300" id="shop-products-grid">
                 <!-- Produkty sklepu generowane przez JS -->
             </div>
         </main>
@@ -141,7 +151,7 @@
             <div class="space-y-2">
                 <p class="text-[11px] uppercase tracking-wider text-sensei-light font-semibold">Gotowe scenariusze (kliknij):</p>
                 <div class="flex flex-wrap gap-2">
-                    <button onclick="runScenario('wygodne buty do biegania wodoodporne do 200 zł')" class="text-left text-xs bg-black/20 hover:bg-sensei-light/30 border border-sensei-light/20 px-3 py-2 rounded-lg transition-colors leading-tight">
+                    <button onclick="runScenario('wygodne buty do biegania wodoodporne')" class="text-left text-xs bg-black/20 hover:bg-sensei-light/30 border border-sensei-light/20 px-3 py-2 rounded-lg transition-colors leading-tight">
                         🏃‍♂️ Wygodne buty do biegania wodoodporne
                     </button>
                     <button onclick="runScenario('lekkie słuchawki bezprzewodowe do ćwiczeń')" class="text-left text-xs bg-black/20 hover:bg-sensei-light/30 border border-sensei-light/20 px-3 py-2 rounded-lg transition-colors leading-tight">
@@ -287,44 +297,89 @@
     <!-- LOGIKA JAVASCRIPT (MVP)                    -->
     <!-- ========================================== -->
     <script>
-        // --- DANE DLA SKLEPU W TLE ---
+        // --- DANE DLA SKLEPU W TLE (Z DODANYMI PRAWDZIWYMI ZDJĘCIAMI I KATEGORIAMI) ---
         const backgroundProducts = [
-            { name: "Smartfon X Pro 128GB", price: "2499,00 zł", img: "https://placehold.co/300x200/e2e8f0/64748b?text=Smartfon" },
-            { name: "Laptop biurowy 15.6\"", price: "1899,00 zł", img: "https://placehold.co/300x200/e2e8f0/64748b?text=Laptop" },
-            { name: "Słuchawki nauszne Basic", price: "99,00 zł", img: "https://placehold.co/300x200/e2e8f0/64748b?text=Słuchawki" },
-            { name: "Myszka bezprzewodowa", price: "45,00 zł", img: "https://placehold.co/300x200/e2e8f0/64748b?text=Myszka" },
-            { name: "Klawiatura mechaniczna", price: "299,00 zł", img: "https://placehold.co/300x200/e2e8f0/64748b?text=Klawiatura" },
-            { name: "Monitor 24 cale FHD", price: "549,00 zł", img: "https://placehold.co/300x200/e2e8f0/64748b?text=Monitor" },
-            { name: "Powerbank 20000mAh", price: "120,00 zł", img: "https://placehold.co/300x200/e2e8f0/64748b?text=Powerbank" },
-            { name: "Kabel USB-C 2m", price: "25,00 zł", img: "https://placehold.co/300x200/e2e8f0/64748b?text=Kabel+USB" },
+            // Laptopy
+            { name: "Laptop biurowy 15.6\"", price: "2899,00 zł", category: "laptopy", img: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=300&h=200&fit=crop" },
+            { name: "MacBook Pro M2", price: "5499,00 zł", category: "laptopy", img: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=300&h=200&fit=crop" },
+            { name: "Laptop Gamingowy RTX", price: "4599,00 zł", category: "laptopy", img: "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=300&h=200&fit=crop" },
+            
+            // Telefony
+            { name: "Smartfon X Pro 128GB", price: "2499,00 zł", category: "telefony", img: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&h=200&fit=crop" },
+            { name: "Telefon Nova 5G", price: "1899,00 zł", category: "telefony", img: "https://images.unsplash.com/photo-1598327105666-5b89351cb31b?w=300&h=200&fit=crop" },
+            { name: "Foldable Phone Z", price: "4199,00 zł", category: "telefony", img: "https://images.unsplash.com/photo-1580910051074-3eb694886505?w=300&h=200&fit=crop" },
+
+            // Audio
+            { name: "Słuchawki nauszne ANC", price: "599,00 zł", category: "audio", img: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=200&fit=crop" },
+            { name: "Słuchawki TWS Sport", price: "199,00 zł", category: "audio", img: "https://images.unsplash.com/photo-1572569438062-cba5600c3b88?w=300&h=200&fit=crop" },
+            { name: "Głośnik Bluetooth", price: "249,00 zł", category: "audio", img: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=300&h=200&fit=crop" },
+
+            // Akcesoria
+            { name: "Myszka bezprzewodowa", price: "145,00 zł", category: "akcesoria", img: "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=300&h=200&fit=crop" },
+            { name: "Klawiatura mechaniczna", price: "349,00 zł", category: "akcesoria", img: "https://images.unsplash.com/photo-1595225476474-87563907a212?w=300&h=200&fit=crop" },
+            { name: "Powerbank 20000mAh", price: "120,00 zł", category: "akcesoria", img: "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=300&h=200&fit=crop" }
         ];
 
-        // --- BAZA DANYCH SENSEI AI (HARDCODED MVP - Fallback) ---
+        // --- BAZA DANYCH SENSEI AI (HARDCODED MVP Z PRAWDZIWYMI ZDJĘCIAMI OFFLINE) ---
         const db = {
             shoes: [
-                { title: "Kalenji Run Active - Męskie", price: "149,99 zł", store: "e-Sklep (Allegro)", img: "https://placehold.co/150x150/2D4A1E/ffffff?text=Buty+1" },
-                { title: "Kiprun KS500 Wodoodporne", price: "199,00 zł", store: "Decathlon", img: "https://placehold.co/150x150/2D4A1E/ffffff?text=Buty+2" },
-                { title: "Asics Gel-Venture 8 WR", price: "185,00 zł", store: "eobuwie", img: "https://placehold.co/150x150/2D4A1E/ffffff?text=Buty+3" }
+                { title: "Kalenji Run Active", price: "149,99 zł", store: "e-Sklep (Allegro)", img: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=150&h=150&fit=crop" },
+                { title: "Kiprun KS500", price: "199,00 zł", store: "Decathlon", img: "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=150&h=150&fit=crop" },
+                { title: "Asics Gel-Venture 8", price: "185,00 zł", store: "eobuwie", img: "https://images.unsplash.com/photo-1539185441755-769473a23570?w=150&h=150&fit=crop" }
             ],
             audio: [
-                { title: "JBL Tune 510BT Lekkie", price: "169,00 zł", store: "e-Sklep", img: "https://placehold.co/150x150/1a2e11/ffffff?text=Słuchawki+1" },
-                { title: "Sony WH-CH520", price: "189,00 zł", store: "MediaExpert", img: "https://placehold.co/150x150/1a2e11/ffffff?text=Słuchawki+2" }
+                { title: "JBL Tune 510BT Lekkie", price: "169,00 zł", store: "e-Sklep", img: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=150&h=150&fit=crop" },
+                { title: "Sony WH-CH520", price: "189,00 zł", store: "MediaExpert", img: "https://images.unsplash.com/photo-1572569438062-cba5600c3b88?w=150&h=150&fit=crop" },
+                { title: "Beats Flex Wireless", price: "249,00 zł", store: "Amazon.pl", img: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=150&h=150&fit=crop" }
+            ],
+            watches: [
+                { title: "Drewniany Zegarek Bobo", price: "129,00 zł", store: "Allegro", img: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=150&h=150&fit=crop" },
+                { title: "Zegarek Fossil Naturals", price: "450,00 zł", store: "eSklep", img: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=150&h=150&fit=crop" }
+            ],
+            gift: [
+                { title: "Zestaw naturalnych świec", price: "89,00 zł", store: "Allegro", img: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=150&h=150&fit=crop" }
             ],
             fallback: [
-                { title: "Bestseller tygodnia - kubek termiczny", price: "45,00 zł", store: "e-Sklep", img: "https://placehold.co/150x150/333/fff?text=Produkt" }
+                { title: "Bestseller tygodnia", price: "45,00 zł", store: "e-Sklep", img: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=150&h=150&fit=crop" }
             ]
         };
 
-        // Renderowanie tła sklepu
-        function renderShopBackground() {
+        // Renderowanie tła sklepu (Z obsługą kategorii)
+        function renderShopBackground(filterCategory = 'all') {
             const grid = document.getElementById('shop-products-grid');
-            grid.innerHTML = backgroundProducts.map(p => `
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer">
-                    <img src="${p.img}" alt="${p.name}" class="w-full h-40 object-cover rounded-lg mb-3">
-                    <h3 class="font-medium text-sm text-gray-800 line-clamp-2">${p.name}</h3>
-                    <p class="text-shop-primary font-bold mt-2">${p.price}</p>
-                </div>
-            `).join('');
+            grid.style.opacity = '0';
+            
+            setTimeout(() => {
+                const filteredProducts = filterCategory === 'all' 
+                    ? backgroundProducts 
+                    : backgroundProducts.filter(p => p.category === filterCategory);
+
+                grid.innerHTML = filteredProducts.map(p => `
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer">
+                        <img src="${p.img}" alt="${p.name}" class="w-full h-40 object-cover rounded-lg mb-3">
+                        <h3 class="font-medium text-sm text-gray-800 line-clamp-2">${p.name}</h3>
+                        <p class="text-shop-primary font-bold mt-2">${p.price}</p>
+                    </div>
+                `).join('');
+                
+                grid.style.opacity = '1';
+            }, 150);
+        }
+
+        // Filtrowanie z zakładek
+        function filterShop(category) {
+            // Reset stylów wszystkich zakładek
+            document.querySelectorAll('.shop-tab').forEach(tab => {
+                tab.classList.remove('font-bold', 'text-shop-primary', 'border-shop-primary');
+                tab.classList.add('font-medium', 'text-gray-500', 'border-transparent');
+            });
+            
+            // Nadanie stylu aktywnej zakładce
+            const activeTab = document.getElementById(`tab-${category}`);
+            activeTab.classList.remove('font-medium', 'text-gray-500', 'border-transparent');
+            activeTab.classList.add('font-bold', 'text-shop-primary', 'border-shop-primary');
+            
+            renderShopBackground(category);
         }
 
         // Kontrola Extension Panelu
@@ -382,7 +437,8 @@
             triggerSearch();
         }
 
-        const apiKey = "AIzaSyCxQBAtav6jq1yhCLVaKkYfmSrJQIA47o0";
+        // TUTAJ MOŻESZ WPISAĆ SWÓJ KLUCZ API:
+        const apiKey = ""; 
         const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
         const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
 
@@ -450,6 +506,18 @@
             searchBtn.disabled = true;
             searchBtn.classList.add('opacity-50');
 
+            // Jeśli klucz API jest pusty, od razu przejdź do trybu offline (żeby nie marnować czasu na błąd)
+            if (!apiKey) {
+                setTimeout(() => {
+                    loadingState.classList.add('hidden');
+                    searchBtn.disabled = false;
+                    searchBtn.classList.remove('opacity-50');
+                    resultsContainer.classList.remove('hidden');
+                    displayFallbackResults(query.toLowerCase());
+                }, 1500); // 1.5s symulacji ładowania
+                return;
+            }
+
             try {
                 const payload = {
                     contents: [{ parts: [{ text: query }] }],
@@ -513,6 +581,9 @@
             }
         }
 
+        // ==========================================
+        // FUNKCJA DLA TRYBU ONLINE (GEMINI API)
+        // ==========================================
         function displayAIResults(data) {
             const resultsContainer = document.getElementById('results-container');
             
@@ -597,14 +668,57 @@
             });
         }
 
+        // ==========================================
+        // FUNKCJA DLA TRYBU OFFLINE (GOTOWE DANE Z PRAWDZIWYMI FOTKAMI)
+        // ==========================================
         function displayFallbackResults(query) {
-            // ... (kod pozostaje bez zmian jak wyżej, usunięto dla czystości logiki błędu)
             const resultsContainer = document.getElementById('results-container');
-            resultsContainer.innerHTML = `<div class="p-4 text-center text-red-400 text-sm">Brak dostępności API. Odśwież stronę.</div>`;
+            let results = db.fallback;
+
+            // Prosta heurystyka dopasowania (Tryb Offline)
+            if (query.includes('buty') || query.includes('biegania') || query.includes('wodoodporne')) {
+                results = db.shoes;
+            } else if (query.includes('słuchawki') || query.includes('audio') || query.includes('ćwiczeń')) {
+                results = db.audio;
+            } else if (query.includes('zegarek') || query.includes('męski') || query.includes('drewniany')) {
+                results = db.watches;
+            } else if (query.includes('prezent') || query.includes('dziewczyny')) {
+                results = db.gift;
+            }
+
+            // Renderowanie wyników z wbudowanej bazy (fallback)
+            const html = results.map(item => `
+                <div class="bg-black/30 rounded-lg p-3 flex gap-4 border border-white/5 hover:border-sensei-light/50 transition-colors group">
+                    <img src="${item.img}" alt="${item.title}" class="w-20 h-20 rounded object-cover shadow-md bg-white/10 shrink-0">
+                    <div class="flex-1 flex flex-col justify-between">
+                        <div>
+                            <h4 class="text-sm font-semibold leading-tight mb-1 group-hover:text-sensei-accent transition-colors">${item.title}</h4>
+                            <span class="text-[10px] bg-white/10 text-gray-300 px-2 py-0.5 rounded-full inline-block border border-white/5">${item.store}</span>
+                            <p class="text-xs text-gray-500 italic mt-1">Wynik przygotowany (Offline)</p>
+                        </div>
+                        <div class="flex items-end justify-between mt-2">
+                            <span class="font-bold text-sensei-accent text-sm">${item.price}</span>
+                            <button class="text-[10px] uppercase tracking-wider font-bold bg-white/10 hover:bg-sensei-light px-3 py-1.5 rounded transition-colors">
+                                Zobacz
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            resultsContainer.innerHTML = `
+                <div class="text-xs text-yellow-500 flex items-center gap-1.5 pb-2 border-b border-white/10 mb-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    Tryb offline. Aby aktywować AI na żywo, dodaj darmowy klucz API w kodzie.
+                </div>
+                ${html}
+            `;
         }
 
-        // --- RESZTA FUNKCJI BEZ ZMIAN ---
 
+        // ==========================================
+        // DODATKOWE FUNKCJE AI 
+        // ==========================================
         async function enhancePrompt() {
             const input = document.getElementById('ai-search-input');
             const query = input.value.trim();
@@ -612,6 +726,12 @@
 
             const enhanceBtn = document.getElementById('enhance-btn');
             const originalText = enhanceBtn.innerHTML;
+            
+            if (!apiKey) {
+                alert("Aby użyć tej funkcji, musisz podać klucz API w kodzie źródłowym.");
+                return;
+            }
+
             enhanceBtn.innerHTML = `✨ Ulepszanie...`;
             enhanceBtn.disabled = true;
             enhanceBtn.classList.add('opacity-50');
@@ -623,7 +743,9 @@
             try {
                 const result = await fetchWithRetry(geminiUrl, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload) });
                 input.value = result.candidates[0].content.parts[0].text.trim();
-            } catch (e) {} finally {
+            } catch (e) {
+                console.error(e);
+            } finally {
                 enhanceBtn.innerHTML = originalText;
                 enhanceBtn.disabled = false;
                 enhanceBtn.classList.remove('opacity-50');
@@ -632,6 +754,12 @@
 
         async function analyzeReviews(btn, title) {
             const container = btn.nextElementSibling;
+            
+            if (!apiKey) {
+                alert("Aby użyć tej funkcji, musisz podać klucz API w kodzie źródłowym.");
+                return;
+            }
+            
             btn.innerHTML = `Analizowanie...`;
             btn.disabled = true;
 
@@ -658,7 +786,9 @@
                 btn.classList.add('hidden');
                 container.classList.remove('hidden');
                 container.innerHTML = `<div class="text-yellow-500 font-bold">★ ${aiData.rating}/5</div><div class="text-green-400">+ ${aiData.pros[0]}</div><div class="text-red-400">- ${aiData.cons[0]}</div><div class="text-gray-400 italic text-[10px] mt-1">"${aiData.summary}"</div>`;
-            } catch (e) {}
+            } catch (e) {
+                btn.innerHTML = `Błąd AI.`;
+            }
         }
 
         async function compareProductsAI() {
@@ -678,11 +808,19 @@
                 btn.classList.add('hidden');
                 resDiv.classList.remove('hidden');
                 resDiv.innerHTML = `<div class="font-bold text-sensei-accent mb-1">Werdykt AI</div>${result.candidates[0].content.parts[0].text.replace(/\n/g, '<br>')}`;
-            } catch (e) {}
+            } catch (e) {
+                btn.innerHTML = `Błąd analizy AI.`;
+            }
         }
 
         async function findCheaperAlternative(btn, title, price) {
             const container = btn.nextElementSibling;
+            
+            if (!apiKey) {
+                alert("Aby użyć tej funkcji, musisz podać klucz API w kodzie źródłowym.");
+                return;
+            }
+            
             btn.innerHTML = `Szukanie opcji...`;
             btn.disabled = true;
 
@@ -708,11 +846,16 @@
                 btn.classList.add('hidden');
                 container.classList.remove('hidden');
                 container.innerHTML = `<div class="text-sensei-accent font-bold">Alternatywa: ${aiData.altTitle}</div><div class="text-white">${aiData.altPrice}</div><div class="text-gray-400 italic text-[10px]">"${aiData.reason}"</div>`;
-            } catch (e) {}
+            } catch (e) {
+                btn.innerHTML = `Błąd sieci.`;
+            }
         }
 
+        // ==========================================
+        // INICJALIZACJA
+        // ==========================================
         window.onload = () => {
-            renderShopBackground();
+            renderShopBackground(); // Domyślnie ładuje 'Wszystko'
             document.getElementById('ai-search-input').addEventListener('keydown', function(e) {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
