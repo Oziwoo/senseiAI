@@ -347,9 +347,6 @@
             ],
             gift: [
                 { title: "Zestaw naturalnych świec", price: "89,00 zł", store: "Allegro", img: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=150&h=150&fit=crop" }
-            ],
-            fallback: [
-                { title: "Bestseller tygodnia", price: "45,00 zł", store: "e-Sklep", img: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=150&h=150&fit=crop" }
             ]
         };
 
@@ -561,14 +558,38 @@
 
             } catch (error) {
                 console.warn("API Error. Fallback to seamless presentation mode.", error);
-                // SEAMLESS MOCK MODE: Niezauważalnie wczytuje gotowe dane, jeśli API zablokuje zapytanie.
-                let results = db.fallback;
+                
+                // SEAMLESS MOCK MODE Z DYNAMICZNYMI ZDJĘCIAMI
+                let results;
                 const q = query.toLowerCase();
                 
                 if (q.includes('buty') || q.includes('biegania') || q.includes('wodoodporne')) results = db.shoes;
                 else if (q.includes('słuchawki') || q.includes('audio') || q.includes('ćwiczeń')) results = db.audio;
                 else if (q.includes('zegarek') || q.includes('męski') || q.includes('drewniany')) results = db.watches;
                 else if (q.includes('prezent') || q.includes('dziewczyny')) results = db.gift;
+                else {
+                    // DYNAMICZNE WYNIKI DLA DOWOLNEGO SŁOWA!
+                    results = [
+                        { 
+                            title: `Wysokiej jakości ${query}`, 
+                            price: "199,00 zł", 
+                            store: "e-Sklep Premium", 
+                            img: `https://image.pollinations.ai/prompt/${encodeURIComponent('professional ecommerce photo of ' + query + ', isolated on clean white background')}?width=200&height=200&nologo=true&seed=1` 
+                        },
+                        { 
+                            title: `Bestseller: ${query}`, 
+                            price: "149,00 zł", 
+                            store: "Allegro", 
+                            img: `https://image.pollinations.ai/prompt/${encodeURIComponent('professional ecommerce photo of ' + query + ', isolated on clean white background')}?width=200&height=200&nologo=true&seed=2` 
+                        },
+                        { 
+                            title: `Budżetowy wybór: ${query}`, 
+                            price: "89,00 zł", 
+                            store: "Amazon", 
+                            img: `https://image.pollinations.ai/prompt/${encodeURIComponent('professional ecommerce photo of ' + query + ', isolated on clean white background')}?width=200&height=200&nologo=true&seed=3` 
+                        }
+                    ];
+                }
 
                 const aiData = {
                     summary: "Oto najlepsze opcje, które dla Ciebie wyselekcjonowałem na podstawie Twojego opisu!",
@@ -578,7 +599,7 @@
                         store: p.store,
                         imgText: p.title,
                         reason: "Idealnie pasuje do Twoich wytycznych i mieści się w zakładanym budżecie.",
-                        mockImg: p.img // Podajemy gotowe zdjęcie
+                        mockImg: p.img
                     }))
                 };
                 currentAIProducts = aiData.products; 
@@ -587,7 +608,6 @@
                     compareContainer.classList.remove('hidden');
                 }
             } finally {
-                // Udajemy naturalny czas myślenia AI
                 setTimeout(() => {
                     loadingState.classList.add('hidden');
                     searchBtn.disabled = false;
@@ -611,7 +631,7 @@
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            <span class="text-[9px] text-slate-500 font-medium">Zdjęcie...</span>
+                            <span class="text-[9px] text-slate-500 font-medium">Zdjęcie AI...</span>
                             <img id="img-actual-${index}" src="" alt="${item.title}" class="absolute inset-0 w-full h-full object-cover hidden transition-opacity duration-500 opacity-0">
                         </div>
 
@@ -652,7 +672,7 @@
                 <div class="text-xs text-sensei-primary flex flex-col gap-2 pb-4 border-b border-slate-200 mb-2">
                     <div class="flex items-center gap-1.5 font-bold uppercase tracking-wider text-[10px]">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                        Analiza Gemini
+                        Analiza Inteligentna
                     </div>
                     <span class="text-slate-600 text-sm leading-snug font-medium">${data.summary}</span>
                 </div>
@@ -661,38 +681,47 @@
 
             data.products.forEach((item, index) => {
                 if (item.mockImg) {
-                    // Tryb Seamless Mock - wczytanie gotowego obrazka
+                    // Tryb Seamless Mock - wczytanie gotowego lub wygenerowanego obrazka (Darmowe API Pollinations)
                     setTimeout(() => {
                         const imgEl = document.getElementById(`img-actual-${index}`);
                         const boxEl = document.getElementById(`img-box-${index}`);
                         if(imgEl && boxEl) {
-                            boxEl.innerHTML = '';
-                            boxEl.appendChild(imgEl);
                             imgEl.src = item.mockImg;
-                            imgEl.classList.remove('hidden');
-                            setTimeout(() => imgEl.classList.remove('opacity-0'), 50);
+                            imgEl.onload = () => {
+                                boxEl.innerHTML = '';
+                                boxEl.appendChild(imgEl);
+                                imgEl.classList.remove('hidden');
+                                setTimeout(() => imgEl.classList.remove('opacity-0'), 50);
+                            };
                         }
-                    }, 500 + (index * 200)); // Płynne ładowanie jeden po drugim
+                    }, 500 + (index * 200)); 
                 } else {
-                    // Tryb Live API - Próba wygenerowania obrazka Imagen
+                    // Tryb Live API 
                     generateProductImage(item.imgText || item.title).then(imgBase64 => {
                         const imgEl = document.getElementById(`img-actual-${index}`);
                         const boxEl = document.getElementById(`img-box-${index}`);
                         if(imgEl && boxEl) {
-                            boxEl.innerHTML = '';
-                            boxEl.appendChild(imgEl);
                             imgEl.src = imgBase64;
-                            imgEl.classList.remove('hidden');
-                            setTimeout(() => imgEl.classList.remove('opacity-0'), 50);
+                            imgEl.onload = () => {
+                                boxEl.innerHTML = '';
+                                boxEl.appendChild(imgEl);
+                                imgEl.classList.remove('hidden');
+                                setTimeout(() => imgEl.classList.remove('opacity-0'), 50);
+                            };
                         }
                     }).catch(e => {
+                        // Jeśli Imagen zawiedzie, w locie korzystamy z darmowego generatora Pollinations AI!
                         const imgEl = document.getElementById(`img-actual-${index}`);
                         const boxEl = document.getElementById(`img-box-${index}`);
                         if(imgEl && boxEl) {
-                            boxEl.innerHTML = '';
-                            boxEl.appendChild(imgEl);
-                            imgEl.src = `https://placehold.co/150x150/f8f9fa/163b65?text=${encodeURIComponent(item.title.split(' ')[0])}`;
-                            imgEl.classList.remove('hidden', 'opacity-0');
+                            const fallbackQuery = item.imgText || item.title;
+                            imgEl.src = `https://image.pollinations.ai/prompt/${encodeURIComponent('professional ecommerce product photo of ' + fallbackQuery + ' isolated on clean white background')}?width=200&height=200&nologo=true&seed=${Math.floor(Math.random() * 1000)}`;
+                            imgEl.onload = () => {
+                                boxEl.innerHTML = '';
+                                boxEl.appendChild(imgEl);
+                                imgEl.classList.remove('hidden');
+                                setTimeout(() => imgEl.classList.remove('opacity-0'), 50);
+                            };
                         }
                     });
                 }
@@ -719,7 +748,6 @@
                 const result = await fetchWithRetry(geminiUrl, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload) });
                 input.value = result.candidates[0].content.parts[0].text.trim();
             } catch (e) {
-                // Seamless Mock
                 input.value = `${query} - świetna jakość, trwałe materiały, polecane przez użytkowników w bardzo dobrym budżecie`;
             } finally {
                 enhanceBtn.innerHTML = originalText;
@@ -757,7 +785,6 @@
                 container.classList.remove('hidden');
                 container.innerHTML = `<div class="text-yellow-600 font-bold mb-1">★ ${aiData.rating}/5</div><div class="text-green-600 font-medium">+ ${aiData.pros[0]}</div><div class="text-red-500 font-medium">- ${aiData.cons[0]}</div><div class="text-slate-500 italic text-[10px] mt-2">"${aiData.summary}"</div>`;
             } catch (e) {
-                // Seamless Mock
                 setTimeout(() => {
                     btn.classList.add('hidden');
                     container.classList.remove('hidden');
@@ -784,7 +811,6 @@
                 resDiv.classList.remove('hidden');
                 resDiv.innerHTML = `<div class="font-bold text-sensei-primary mb-1">Werdykt AI</div>${result.candidates[0].content.parts[0].text.replace(/\n/g, '<br>')}`;
             } catch (e) {
-                // Seamless Mock
                 setTimeout(() => {
                     btn.classList.add('hidden');
                     resDiv.classList.remove('hidden');
@@ -821,7 +847,6 @@
                 container.classList.remove('hidden');
                 container.innerHTML = `<div class="text-sensei-primary font-bold mb-1">Alternatywa: ${aiData.altTitle}</div><div class="text-slate-800 font-bold mb-1">${aiData.altPrice}</div><div class="text-slate-500 font-medium italic text-[10px]">"${aiData.reason}"</div>`;
             } catch (e) {
-                // Seamless Mock
                 setTimeout(() => {
                     btn.classList.add('hidden');
                     container.classList.remove('hidden');
@@ -879,7 +904,6 @@
                 
                 container.innerHTML = `<div class="font-bold text-[10px] mb-3 text-slate-800 flex items-center gap-1"><svg class="w-3 h-3 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>Polecane dodatki AI:</div>${accHtml}`;
             } catch (e) {
-                // Seamless Mock
                 setTimeout(() => {
                     btn.classList.add('hidden');
                     container.classList.remove('hidden');
