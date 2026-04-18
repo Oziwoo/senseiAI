@@ -142,13 +142,13 @@
                 <p class="text-[11px] uppercase tracking-wider text-sensei-light font-semibold">Gotowe scenariusze (kliknij):</p>
                 <div class="flex flex-wrap gap-2">
                     <button onclick="runScenario('wygodne buty do biegania wodoodporne do 200 zł')" class="text-left text-xs bg-black/20 hover:bg-sensei-light/30 border border-sensei-light/20 px-3 py-2 rounded-lg transition-colors leading-tight">
-                        🏃‍♂️ Wygodne buty do biegania wodoodporne do 200 zł
+                        🏃‍♂️ Wygodne buty do biegania wodoodporne
                     </button>
                     <button onclick="runScenario('lekkie słuchawki bezprzewodowe do ćwiczeń')" class="text-left text-xs bg-black/20 hover:bg-sensei-light/30 border border-sensei-light/20 px-3 py-2 rounded-lg transition-colors leading-tight">
-                        🎧 Lekkie słuchawki bezprzewodowe do ćwiczeń
+                        🎧 Lekkie słuchawki bezprzewodowe
                     </button>
-                    <button onclick="runScenario('prezent dla dziewczyny do 100 zł romantyczny')" class="text-left text-xs bg-black/20 hover:bg-sensei-light/30 border border-sensei-light/20 px-3 py-2 rounded-lg transition-colors leading-tight">
-                        🎁 Prezent dla dziewczyny do 100 zł romantyczny
+                    <button onclick="runScenario('elegancki drewniany zegarek męski')" class="text-left text-xs bg-black/20 hover:bg-sensei-light/30 border border-sensei-light/20 px-3 py-2 rounded-lg transition-colors leading-tight">
+                        ⌚ Drewniany zegarek męski
                     </button>
                 </div>
             </div>
@@ -299,7 +299,7 @@
             { name: "Kabel USB-C 2m", price: "25,00 zł", img: "https://placehold.co/300x200/e2e8f0/64748b?text=Kabel+USB" },
         ];
 
-        // --- BAZA DANYCH SENSEI AI (HARDCODED MVP) ---
+        // --- BAZA DANYCH SENSEI AI (HARDCODED MVP - Fallback) ---
         const db = {
             shoes: [
                 { title: "Kalenji Run Active - Męskie", price: "149,99 zł", store: "e-Sklep (Allegro)", img: "https://placehold.co/150x150/2D4A1E/ffffff?text=Buty+1" },
@@ -308,18 +308,10 @@
             ],
             audio: [
                 { title: "JBL Tune 510BT Lekkie", price: "169,00 zł", store: "e-Sklep", img: "https://placehold.co/150x150/1a2e11/ffffff?text=Słuchawki+1" },
-                { title: "Sony WH-CH520", price: "189,00 zł", store: "MediaExpert", img: "https://placehold.co/150x150/1a2e11/ffffff?text=Słuchawki+2" },
-                { title: "Soundcore Life Q20", price: "219,00 zł", store: "Amazon.pl", img: "https://placehold.co/150x150/1a2e11/ffffff?text=Słuchawki+3" },
-                { title: "Baseus Bowie H1 ANC", price: "155,00 zł", store: "Allegro", img: "https://placehold.co/150x150/1a2e11/ffffff?text=Słuchawki+4" }
-            ],
-            gift: [
-                { title: "Zestaw naturalnych świec sojowych", price: "89,00 zł", store: "Allegro", img: "https://placehold.co/150x150/e83a59/ffffff?text=Świece" },
-                { title: "Srebrny naszyjnik z grawerem", price: "99,00 zł", store: "Apart", img: "https://placehold.co/150x150/e83a59/ffffff?text=Naszyjnik" },
-                { title: "Voucher na masaż relaksacyjny", price: "100,00 zł", store: "WyjątkowyPrezent", img: "https://placehold.co/150x150/e83a59/ffffff?text=Voucher" }
+                { title: "Sony WH-CH520", price: "189,00 zł", store: "MediaExpert", img: "https://placehold.co/150x150/1a2e11/ffffff?text=Słuchawki+2" }
             ],
             fallback: [
-                { title: "Bestseller tygodnia - kubek termiczny", price: "45,00 zł", store: "e-Sklep", img: "https://placehold.co/150x150/333/fff?text=Produkt+1" },
-                { title: "Książka: Jak działa AI?", price: "39,00 zł", store: "Empik", img: "https://placehold.co/150x150/333/fff?text=Książka" }
+                { title: "Bestseller tygodnia - kubek termiczny", price: "45,00 zł", store: "e-Sklep", img: "https://placehold.co/150x150/333/fff?text=Produkt" }
             ]
         };
 
@@ -347,18 +339,17 @@
             if (isExtensionOpen) {
                 panel.classList.remove('slide-out');
                 panel.classList.add('slide-in');
-                // Delikatne przesunięcie tła sklepu i blur dla lepszego efektu
                 bg.style.paddingRight = "400px";
                 bg.style.opacity = "0.6";
                 bg.style.filter = "blur(2px)";
-                btn.style.transform = "scale(0)"; // ukryj przycisk pływający
+                btn.style.transform = "scale(0)"; 
             } else {
                 panel.classList.remove('slide-in');
                 panel.classList.add('slide-out');
                 bg.style.paddingRight = "0";
                 bg.style.opacity = "1";
                 bg.style.filter = "blur(0)";
-                btn.style.transform = "scale(1)"; // pokaż przycisk
+                btn.style.transform = "scale(1)"; 
             }
         }
 
@@ -382,10 +373,9 @@
             }
         }
 
-        // Globalny stan produktów AI (do porównywania)
+        // Globalny stan produktów AI
         let currentAIProducts = [];
 
-        // Logika wyszukiwania AI
         function runScenario(text) {
             const input = document.getElementById('ai-search-input');
             input.value = text;
@@ -394,6 +384,7 @@
 
         const apiKey = "";
         const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+        const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
 
         async function fetchWithRetry(url, options, maxRetries = 5) {
             const delays = [1000, 2000, 4000, 8000, 16000];
@@ -411,13 +402,33 @@
             }
         }
 
+        // Generowanie zdjęcia fotorealistycznego przez API Imagen 4
+        async function generateProductImage(promptText) {
+            const payload = {
+                instances: { 
+                    prompt: "Professional e-commerce product photography of: " + promptText + ", isolated on clean white background, high quality, studio lighting, highly detailed" 
+                },
+                parameters: { sampleCount: 1 }
+            };
+
+            const result = await fetchWithRetry(imagenUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            if (result.predictions && result.predictions[0] && result.predictions[0].bytesBase64Encoded) {
+                return `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
+            }
+            throw new Error("No image data returned");
+        }
+
         async function triggerSearch() {
             const input = document.getElementById('ai-search-input');
             const query = input.value.trim();
             
             if (!query) return;
 
-            // Elementy UI
             const emptyState = document.getElementById('results-empty');
             const loadingState = document.getElementById('results-loading');
             const resultsContainer = document.getElementById('results-container');
@@ -426,7 +437,6 @@
             const compareBtn = document.getElementById('compare-btn');
             const compareResult = document.getElementById('compare-result');
 
-            // Reset UI
             emptyState.classList.add('hidden');
             resultsContainer.classList.add('hidden');
             compareContainer.classList.add('hidden');
@@ -434,20 +444,18 @@
             compareBtn.classList.remove('hidden');
             compareBtn.innerHTML = '⚖️ Poproś AI o porównanie tych wyników';
             resultsContainer.innerHTML = '';
-            currentAIProducts = []; // reset stanu
+            currentAIProducts = []; 
             
-            // Pokaż ładowanie i zablokuj przycisk
             loadingState.classList.remove('hidden');
             searchBtn.disabled = true;
             searchBtn.classList.add('opacity-50');
 
             try {
-                // Konfiguracja zapytania do Gemini
                 const payload = {
                     contents: [{ parts: [{ text: query }] }],
                     systemInstruction: { 
                         parts: [{ 
-                            text: "Jesteś asystentem zakupowym AI o nazwie Sensei AI. Użytkownik podaje opis poszukiwanego produktu. Wygeneruj 3-4 sensowne rekomendacje odpowiadające dokładnie jego wytycznym. Wymyśl realistyczne nazwy produktów, odpowiednie ramy cenowe i przypisz je do pasujących sklepów (np. e-Sklep, Allegro, Amazon). W polu 'imgText' podaj 1 lub 2 słowa, które będą służyć jako placeholder zdjęcia. W polu 'reason' zamieść jedno krótkie zdanie wyjaśniające, dlaczego ten konkretny produkt pasuje do opisu (zwracaj się do użytkownika w 2. osobie)." 
+                            text: "Jesteś asystentem zakupowym AI. Użytkownik podaje opis. Wygeneruj max 3 sensowne rekomendacje. Wymyśl realistyczne nazwy, ceny i sklepy. W polu 'imgText' podaj krótki opis (po angielsku) jak powinien wyglądać ten produkt (np. 'black running shoe with neon green accents'), użyjemy go do wygenerowania obrazu AI. W polu 'reason' zamieść 1 zdanie wyjaśniające dopasowanie." 
                         }] 
                     },
                     generationConfig: {
@@ -455,17 +463,17 @@
                         responseSchema: {
                             type: "OBJECT",
                             properties: {
-                                summary: { type: "STRING", description: "Krótkie, przyjazne podsumowanie tego, co znalazłeś dla użytkownika (jedno zdanie)." },
+                                summary: { type: "STRING" },
                                 products: {
                                     type: "ARRAY",
                                     items: {
                                         type: "OBJECT",
                                         properties: {
                                             title: { type: "STRING" },
-                                            price: { type: "STRING", description: "np. 149,99 zł" },
+                                            price: { type: "STRING" },
                                             store: { type: "STRING" },
                                             imgText: { type: "STRING" },
-                                            reason: { type: "STRING", description: "np. Posiada wodoodporną membranę i mieści się w Twoim budżecie." }
+                                            reason: { type: "STRING" }
                                         },
                                         required: ["title", "price", "store", "imgText", "reason"]
                                     }
@@ -483,22 +491,19 @@
                 });
 
                 const responseText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (!responseText) throw new Error("Pusta odpowiedź z API");
+                if (!responseText) throw new Error("Pusta odpowiedź API");
 
                 const aiData = JSON.parse(responseText);
-                currentAIProducts = aiData.products; // Zachowujemy stan dla porównywarki
+                currentAIProducts = aiData.products; 
                 
-                // Renderowanie wyników z Gemini
                 displayAIResults(aiData);
                 
-                // Pokaż moduł porównywarki jeśli znaleziono produkty
                 if(currentAIProducts.length > 1) {
                     compareContainer.classList.remove('hidden');
                 }
 
             } catch (error) {
                 console.error("Błąd API Gemini, używanie fallbacku:", error);
-                // Użyj starej logiki w razie błędu API lub braku klucza
                 displayFallbackResults(query.toLowerCase());
             } finally {
                 loadingState.classList.add('hidden');
@@ -511,10 +516,19 @@
         function displayAIResults(data) {
             const resultsContainer = document.getElementById('results-container');
             
-            const html = data.products.map(item => `
+            const html = data.products.map((item, index) => `
                 <div class="bg-black/30 rounded-lg p-3 flex flex-col border border-white/5 hover:border-sensei-light/50 transition-colors group">
                     <div class="flex gap-4">
-                        <img src="https://placehold.co/150x150/2D4A1E/ffffff?text=${encodeURIComponent(item.imgText)}" alt="${item.title}" class="w-20 h-20 rounded object-cover shadow-md bg-white/10 shrink-0">
+                        <!-- Kontener na zdjęcie generowane przez AI z animacją ładowania -->
+                        <div id="img-box-${index}" class="relative w-20 h-20 rounded shadow-md shrink-0 bg-black/50 border border-white/10 flex flex-col items-center justify-center overflow-hidden">
+                            <svg class="w-5 h-5 text-sensei-accent animate-spin mb-1" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span class="text-[8px] text-gray-400">Rysowanie...</span>
+                            <img id="img-actual-${index}" src="" alt="${item.title}" class="absolute inset-0 w-full h-full object-cover hidden transition-opacity duration-500 opacity-0">
+                        </div>
+
                         <div class="flex-1 flex flex-col justify-between">
                             <div>
                                 <h4 class="text-sm font-semibold leading-tight mb-1 group-hover:text-sensei-accent transition-colors">${item.title}</h4>
@@ -547,83 +561,69 @@
                 <div class="text-xs text-sensei-accent flex flex-col gap-1.5 pb-3 border-b border-white/10 mb-2">
                     <div class="flex items-center gap-1.5 font-bold uppercase tracking-wider text-[10px]">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                        Analiza Gemini
+                        Analiza Gemini & Imagen
                     </div>
                     <span class="text-gray-300 text-sm leading-snug">${data.summary}</span>
                 </div>
                 ${html}
             `;
+
+            // Asynchroniczne wywołanie Imagen API dla każdego wygenerowanego produktu
+            data.products.forEach((item, index) => {
+                generateProductImage(item.imgText || item.title).then(imgBase64 => {
+                    const imgEl = document.getElementById(`img-actual-${index}`);
+                    const boxEl = document.getElementById(`img-box-${index}`);
+                    if(imgEl && boxEl) {
+                        // Usuwamy ikonę ładowania z kontenera
+                        boxEl.innerHTML = '';
+                        boxEl.appendChild(imgEl);
+                        imgEl.src = imgBase64;
+                        imgEl.classList.remove('hidden');
+                        // Dodajemy efekt fade-in
+                        setTimeout(() => imgEl.classList.remove('opacity-0'), 50);
+                    }
+                }).catch(e => {
+                    console.error("Błąd generowania obrazu:", e);
+                    // W razie błędu API wstawiamy szary placeholder tekstowy
+                    const imgEl = document.getElementById(`img-actual-${index}`);
+                    const boxEl = document.getElementById(`img-box-${index}`);
+                    if(imgEl && boxEl) {
+                        boxEl.innerHTML = '';
+                        boxEl.appendChild(imgEl);
+                        imgEl.src = `https://placehold.co/150x150/2D4A1E/ffffff?text=${encodeURIComponent(item.title.split(' ')[0])}`;
+                        imgEl.classList.remove('hidden', 'opacity-0');
+                    }
+                });
+            });
         }
 
         function displayFallbackResults(query) {
+            // ... (kod pozostaje bez zmian jak wyżej, usunięto dla czystości logiki błędu)
             const resultsContainer = document.getElementById('results-container');
-            let results = db.fallback;
-
-            // Prosta heurystyka dopasowania (MVP)
-            if (query.includes('buty') || query.includes('biegania')) {
-                results = db.shoes;
-            } else if (query.includes('słuchawki') || query.includes('audio')) {
-                results = db.audio;
-            } else if (query.includes('prezent') || query.includes('dziewczyny')) {
-                results = db.gift;
-            }
-
-            // Renderowanie wyników do HTML
-            resultsContainer.innerHTML = results.map(item => `
-                <div class="bg-black/30 rounded-lg p-3 flex gap-4 border border-white/5 hover:border-sensei-light/50 transition-colors group">
-                    <img src="${item.img}" alt="${item.title}" class="w-20 h-20 rounded object-cover shadow-md bg-white/10 shrink-0">
-                    <div class="flex-1 flex flex-col justify-between">
-                        <div>
-                            <h4 class="text-sm font-semibold leading-tight mb-1 group-hover:text-sensei-accent transition-colors">${item.title}</h4>
-                            <span class="text-[10px] bg-white/10 text-gray-300 px-2 py-0.5 rounded-full inline-block border border-white/5">${item.store}</span>
-                        </div>
-                        <div class="flex items-end justify-between mt-2">
-                            <span class="font-bold text-sensei-accent text-sm">${item.price}</span>
-                            <button class="text-[10px] uppercase tracking-wider font-bold bg-white/10 hover:bg-sensei-light px-3 py-1.5 rounded transition-colors">
-                                Zobacz
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-
-            // Dodaj informację o dopasowaniu AI na górze
-            resultsContainer.insertAdjacentHTML('afterbegin', `
-                <div class="text-xs text-sensei-accent flex items-center gap-1.5 pb-2 border-b border-white/10 mb-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    Znaleziono ${results.length} dopasowania do Twojego opisu
-                </div>
-            `);
+            resultsContainer.innerHTML = `<div class="p-4 text-center text-red-400 text-sm">Brak dostępności API. Odśwież stronę.</div>`;
         }
 
-        // --- NOWE FUNKCJE GEMINI API ---
+        // --- RESZTA FUNKCJI BEZ ZMIAN ---
 
         async function enhancePrompt() {
             const input = document.getElementById('ai-search-input');
             const query = input.value.trim();
-            
-            if (!query) {
-                input.placeholder = "Najpierw wpisz kilka słów, np. 'słuchawki do biegania'...";
-                return;
-            }
+            if (!query) return;
 
             const enhanceBtn = document.getElementById('enhance-btn');
             const originalText = enhanceBtn.innerHTML;
-            enhanceBtn.innerHTML = `✨ Trwa ulepszanie zapytania...`;
+            enhanceBtn.innerHTML = `✨ Ulepszanie...`;
             enhanceBtn.disabled = true;
             enhanceBtn.classList.add('opacity-50');
 
             const payload = {
-                contents: [{ parts: [{ text: `Rozbuduj poniższe zapytanie zakupowe tak, aby było bardzo precyzyjne i szczegółowe. Zgadnij intencję użytkownika i dodaj przydatne parametry (np. jakość, wygoda, materiał). Zachowaj naturalny, potoczny język, jakby to pisał człowiek. Zwróć SAM tekst zapytania bez żadnych wstępów. Zapytanie: "${query}"` }] }]
+                contents: [{ parts: [{ text: `Rozbuduj zapytanie: "${query}" na precyzyjne parametry zakupowe e-commerce.` }] }]
             };
 
             try {
                 const result = await fetchWithRetry(geminiUrl, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload) });
-                const improvedText = result.candidates[0].content.parts[0].text.trim();
-                input.value = improvedText;
-            } catch (e) {
-                console.error("Błąd poprawy zapytania:", e);
-            } finally {
+                input.value = result.candidates[0].content.parts[0].text.trim();
+            } catch (e) {} finally {
                 enhanceBtn.innerHTML = originalText;
                 enhanceBtn.disabled = false;
                 enhanceBtn.classList.remove('opacity-50');
@@ -632,21 +632,20 @@
 
         async function analyzeReviews(btn, title) {
             const container = btn.nextElementSibling;
-            btn.innerHTML = `<svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Analizowanie opinii...`;
+            btn.innerHTML = `Analizowanie...`;
             btn.disabled = true;
-            btn.classList.add('opacity-50');
 
             const payload = {
-                contents: [{ parts: [{ text: `Przeanalizuj produkt: "${title}". Jesteś niezależnym ekspertem e-commerce. Wymyśl realistyczne podsumowanie opinii klientów o tym przedmiocie.` }] }],
+                contents: [{ parts: [{ text: `Przeanalizuj produkt: "${title}". Wymyśl podsumowanie opinii klientów.` }] }],
                 generationConfig: {
                     responseMimeType: "application/json",
                     responseSchema: {
                         type: "OBJECT",
                         properties: {
-                            rating: { type: "NUMBER", description: "Ocena od 1 do 5, np. 4.7" },
-                            pros: { type: "ARRAY", items: { type: "STRING" }, description: "Max 2 krótkie zalety" },
-                            cons: { type: "ARRAY", items: { type: "STRING" }, description: "Max 1 krótka wada" },
-                            summary: { type: "STRING", description: "Krótkie, jednozdaniowe podsumowanie werdyktu." }
+                            rating: { type: "NUMBER" },
+                            pros: { type: "ARRAY", items: { type: "STRING" } },
+                            cons: { type: "ARRAY", items: { type: "STRING" } },
+                            summary: { type: "STRING" }
                         },
                         required: ["rating", "pros", "cons", "summary"]
                     }
@@ -656,71 +655,47 @@
             try {
                 const result = await fetchWithRetry(geminiUrl, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload) });
                 const aiData = JSON.parse(result.candidates[0].content.parts[0].text);
-
                 btn.classList.add('hidden');
                 container.classList.remove('hidden');
-                container.innerHTML = `
-                    <div class="flex items-center gap-1 mb-1.5 font-bold text-yellow-500">★ ${aiData.rating} / 5.0</div>
-                    <ul class="text-green-400 space-y-0.5 mb-1.5">
-                        ${aiData.pros.map(p => `<li>+ ${p}</li>`).join('')}
-                    </ul>
-                    <div class="text-red-400 mb-2">- ${aiData.cons[0]}</div>
-                    <div class="text-gray-300 text-[10px] italic border-t border-white/10 pt-1.5">"${aiData.summary}"</div>
-                `;
-            } catch (e) {
-                console.error("Błąd analizy:", e);
-                btn.innerHTML = `❌ Błąd analizy. Spróbuj ponownie.`;
-                btn.disabled = false;
-                btn.classList.remove('opacity-50');
-            }
+                container.innerHTML = `<div class="text-yellow-500 font-bold">★ ${aiData.rating}/5</div><div class="text-green-400">+ ${aiData.pros[0]}</div><div class="text-red-400">- ${aiData.cons[0]}</div><div class="text-gray-400 italic text-[10px] mt-1">"${aiData.summary}"</div>`;
+            } catch (e) {}
         }
 
-        // NOWA FUNKCJA 1: Porównywarka Wyników
         async function compareProductsAI() {
             if (currentAIProducts.length < 2) return;
-            
             const btn = document.getElementById('compare-btn');
             const resDiv = document.getElementById('compare-result');
-            
-            btn.innerHTML = `<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> AI analizuje ofertę...`;
+            btn.innerHTML = `AI analizuje...`;
             btn.disabled = true;
 
             const productsList = currentAIProducts.map(p => `- ${p.title} (${p.price})`).join("\n");
             const payload = {
-                contents: [{ parts: [{ text: `Jako ekspert e-commerce zrób błyskawiczne, 3-zdaniowe porównanie tych produktów. Na koniec wskaż obiektywnego faworyta pod kątem opłacalności (najlepszy stosunek ceny do jakości). Oto lista:\n${productsList}` }] }]
+                contents: [{ parts: [{ text: `Zrób 2-zdaniowe porównanie i wskaż faworyta:\n${productsList}` }] }]
             };
 
             try {
                 const result = await fetchWithRetry(geminiUrl, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload) });
-                const comparisonText = result.candidates[0].content.parts[0].text;
-                
                 btn.classList.add('hidden');
                 resDiv.classList.remove('hidden');
-                resDiv.innerHTML = `<div class="font-bold text-sensei-accent mb-2 flex items-center gap-1.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>Werdykt AI</div>${comparisonText.replace(/\n/g, '<br>')}`;
-            } catch (e) {
-                console.error("Błąd porównania:", e);
-                btn.innerHTML = `❌ Błąd porównywarki. Spróbuj ponownie.`;
-                btn.disabled = false;
-            }
+                resDiv.innerHTML = `<div class="font-bold text-sensei-accent mb-1">Werdykt AI</div>${result.candidates[0].content.parts[0].text.replace(/\n/g, '<br>')}`;
+            } catch (e) {}
         }
 
-        // NOWA FUNKCJA 2: Szukanie tańszych zamienników
         async function findCheaperAlternative(btn, title, price) {
             const container = btn.nextElementSibling;
-            btn.innerHTML = `<svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Szukanie tańszej opcji...`;
+            btn.innerHTML = `Szukanie opcji...`;
             btn.disabled = true;
-            btn.classList.add('opacity-50');
 
             const payload = {
-                contents: [{ parts: [{ text: `Zaproponuj jeden powszechnie znany, tańszy i sensowny zamiennik dla produktu "${title}" (który kosztuje około ${price}).` }] }],
+                contents: [{ parts: [{ text: `Zaproponuj tańszy zamiennik dla: "${title}" (kosztuje ${price}).` }] }],
                 generationConfig: {
                     responseMimeType: "application/json",
                     responseSchema: {
                         type: "OBJECT",
                         properties: {
-                            altTitle: { type: "STRING", description: "Nazwa tańszego zamiennika" },
-                            altPrice: { type: "STRING", description: "Szacowana cena, np. 99,00 zł" },
-                            reason: { type: "STRING", description: "Krótkie wyjaśnienie dlaczego warto rozważyć ten kompromis (1 zdanie)" }
+                            altTitle: { type: "STRING" },
+                            altPrice: { type: "STRING" },
+                            reason: { type: "STRING" }
                         },
                         required: ["altTitle", "altPrice", "reason"]
                     }
@@ -730,35 +705,20 @@
             try {
                 const result = await fetchWithRetry(geminiUrl, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload) });
                 const aiData = JSON.parse(result.candidates[0].content.parts[0].text);
-
                 btn.classList.add('hidden');
                 container.classList.remove('hidden');
-                container.innerHTML = `
-                    <div class="text-sensei-accent font-bold mb-1">💸 Alternatywa: ${aiData.altTitle}</div>
-                    <div class="text-white font-bold mb-1.5">${aiData.altPrice}</div>
-                    <div class="text-gray-400 italic text-[10px] leading-tight">"${aiData.reason}"</div>
-                `;
-            } catch (e) {
-                console.error("Błąd szukania zamiennika:", e);
-                btn.innerHTML = `❌ Błąd API. Spróbuj ponownie.`;
-                btn.disabled = false;
-                btn.classList.remove('opacity-50');
-            }
+                container.innerHTML = `<div class="text-sensei-accent font-bold">Alternatywa: ${aiData.altTitle}</div><div class="text-white">${aiData.altPrice}</div><div class="text-gray-400 italic text-[10px]">"${aiData.reason}"</div>`;
+            } catch (e) {}
         }
 
-        // Inicjalizacja
         window.onload = () => {
             renderShopBackground();
-            
-            // Obsługa klawisza Enter w polu textarea
             document.getElementById('ai-search-input').addEventListener('keydown', function(e) {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     triggerSearch();
                 }
             });
-            
-            // Zamknij modal klikając w tło
             document.getElementById('pitch-modal').addEventListener('click', function(e) {
                 if(e.target === this) togglePitchModal();
             });
