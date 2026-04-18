@@ -439,10 +439,10 @@
         // KLUCZ API
         const apiKey = "AIzaSyCBC91rq-DwP05R7vub5YyUMxIGF0Mt5sk"; 
         const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-        const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
 
-        async function fetchWithRetry(url, options, maxRetries = 2) {
-            const delays = [1000, 2000];
+        // Zoptymalizowana funkcja pobierania z mniejszą ilością opóźnień, żeby było szybko
+        async function fetchWithRetry(url, options, maxRetries = 1) {
+            const delays = [500]; // Krótkie opóźnienie dla szybszego działania na prezentacji
             for (let i = 0; i < maxRetries; i++) {
                 try {
                     const response = await fetch(url, options);
@@ -455,26 +455,6 @@
                     await new Promise(resolve => setTimeout(resolve, delays[i]));
                 }
             }
-        }
-
-        async function generateProductImage(promptText) {
-            const payload = {
-                instances: { 
-                    prompt: "Professional e-commerce product photography of: " + promptText + ", isolated on clean white background, high quality, studio lighting, highly detailed" 
-                },
-                parameters: { sampleCount: 1 }
-            };
-
-            const result = await fetchWithRetry(imagenUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
-
-            if (result.predictions && result.predictions[0] && result.predictions[0].bytesBase64Encoded) {
-                return `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
-            }
-            throw new Error("No image data returned");
         }
 
         async function triggerSearch() {
@@ -574,19 +554,19 @@
                             title: `Wysokiej jakości ${query}`, 
                             price: "199,00 zł", 
                             store: "e-Sklep Premium", 
-                            img: `https://image.pollinations.ai/prompt/${encodeURIComponent('professional ecommerce photo of ' + query + ', isolated on clean white background')}?width=200&height=200&nologo=true&seed=1` 
+                            img: `https://image.pollinations.ai/prompt/${encodeURIComponent('ecommerce product photo of ' + query + ' white background')}?width=200&height=200&nologo=true&enhance=false&seed=1` 
                         },
                         { 
                             title: `Bestseller: ${query}`, 
                             price: "149,00 zł", 
                             store: "Allegro", 
-                            img: `https://image.pollinations.ai/prompt/${encodeURIComponent('professional ecommerce photo of ' + query + ', isolated on clean white background')}?width=200&height=200&nologo=true&seed=2` 
+                            img: `https://image.pollinations.ai/prompt/${encodeURIComponent('ecommerce product photo of ' + query + ' white background')}?width=200&height=200&nologo=true&enhance=false&seed=2` 
                         },
                         { 
                             title: `Budżetowy wybór: ${query}`, 
                             price: "89,00 zł", 
                             store: "Amazon", 
-                            img: `https://image.pollinations.ai/prompt/${encodeURIComponent('professional ecommerce photo of ' + query + ', isolated on clean white background')}?width=200&height=200&nologo=true&seed=3` 
+                            img: `https://image.pollinations.ai/prompt/${encodeURIComponent('ecommerce product photo of ' + query + ' white background')}?width=200&height=200&nologo=true&enhance=false&seed=3` 
                         }
                     ];
                 }
@@ -618,7 +598,7 @@
         }
 
         // ==========================================
-        // FUNKCJA RENDERUJĄCA WYNIKI
+        // FUNKCJA RENDERUJĄCA WYNIKI BŁYSKAWICZNIE
         // ==========================================
         function displayAIResults(data) {
             const resultsContainer = document.getElementById('results-container');
@@ -681,7 +661,7 @@
 
             data.products.forEach((item, index) => {
                 if (item.mockImg) {
-                    // Tryb Seamless Mock - wczytanie gotowego lub wygenerowanego obrazka (Darmowe API Pollinations)
+                    // Tryb Seamless Mock
                     setTimeout(() => {
                         const imgEl = document.getElementById(`img-actual-${index}`);
                         const boxEl = document.getElementById(`img-box-${index}`);
@@ -694,36 +674,31 @@
                                 setTimeout(() => imgEl.classList.remove('opacity-0'), 50);
                             };
                         }
-                    }, 500 + (index * 200)); 
+                    }, 50 + (index * 100)); 
                 } else {
-                    // Tryb Live API 
-                    generateProductImage(item.imgText || item.title).then(imgBase64 => {
-                        const imgEl = document.getElementById(`img-actual-${index}`);
-                        const boxEl = document.getElementById(`img-box-${index}`);
-                        if(imgEl && boxEl) {
-                            imgEl.src = imgBase64;
-                            imgEl.onload = () => {
-                                boxEl.innerHTML = '';
-                                boxEl.appendChild(imgEl);
-                                imgEl.classList.remove('hidden');
-                                setTimeout(() => imgEl.classList.remove('opacity-0'), 50);
-                            };
-                        }
-                    }).catch(e => {
-                        // Jeśli Imagen zawiedzie, w locie korzystamy z darmowego generatora Pollinations AI!
+                    // Tryb Live API - Błyskawiczne generowanie bezpośrednio z darmowego szybkiego modelu
+                    setTimeout(() => {
                         const imgEl = document.getElementById(`img-actual-${index}`);
                         const boxEl = document.getElementById(`img-box-${index}`);
                         if(imgEl && boxEl) {
                             const fallbackQuery = item.imgText || item.title;
-                            imgEl.src = `https://image.pollinations.ai/prompt/${encodeURIComponent('professional ecommerce product photo of ' + fallbackQuery + ' isolated on clean white background')}?width=200&height=200&nologo=true&seed=${Math.floor(Math.random() * 1000)}`;
+                            // enhance=false sprawia, że ładowanie jest o kilka sekund szybsze!
+                            imgEl.src = `https://image.pollinations.ai/prompt/${encodeURIComponent('ecommerce product photo of ' + fallbackQuery + ' white background')}?width=200&height=200&nologo=true&enhance=false&seed=${Math.floor(Math.random() * 1000)}`;
                             imgEl.onload = () => {
                                 boxEl.innerHTML = '';
                                 boxEl.appendChild(imgEl);
                                 imgEl.classList.remove('hidden');
                                 setTimeout(() => imgEl.classList.remove('opacity-0'), 50);
                             };
+                            // Fallback gdyby obraz ładował się źle
+                            imgEl.onerror = () => {
+                                boxEl.innerHTML = '';
+                                boxEl.appendChild(imgEl);
+                                imgEl.src = `https://placehold.co/150x150/f8f9fa/163b65?text=${encodeURIComponent(item.title.split(' ')[0])}`;
+                                imgEl.classList.remove('hidden', 'opacity-0');
+                            }
                         }
-                    });
+                    }, 50 + (index * 100));
                 }
             });
         }
