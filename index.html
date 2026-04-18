@@ -12,14 +12,15 @@
                 extend: {
                     colors: {
                         sensei: {
-                            dark: '#2D4A1E',
-                            light: '#4A7C2F',
-                            bg: '#1a2e11',
-                            accent: '#65a340'
+                            dark: '#0f2a4a',     // Ciemny granat
+                            primary: '#163b65',  // Główny kolor logo
+                            light: '#2c629e',    // Jasny niebieski do hover
+                            bg: '#f9fafb',       // Jasne tło panelu
+                            accent: '#3b82f6'    // Akcent
                         },
                         shop: {
                             bg: '#f3f4f6',
-                            primary: '#ff5a00' // Kolor ala Allegro
+                            primary: '#ff5a00'
                         }
                     },
                     animation: {
@@ -35,28 +36,24 @@
             width: 6px;
         }
         .sensei-scroll::-webkit-scrollbar-track {
-            background: rgba(0,0,0,0.1); 
+            background: rgba(0,0,0,0.05); 
         }
         .sensei-scroll::-webkit-scrollbar-thumb {
-            background: #4A7C2F; 
+            background: #163b65; 
             border-radius: 10px;
         }
         
         /* Animacje wysuwania */
         .slide-in {
             transform: translateX(0%);
+            box-shadow: -10px 0 25px rgba(0,0,0,0.1);
         }
         .slide-out {
             transform: translateX(100%);
         }
-
-        /* Subtelne tło gradientowe dla panelu */
-        .sensei-panel-bg {
-            background: linear-gradient(145deg, #2D4A1E 0%, #1a2e11 100%);
-        }
     </style>
 </head>
-<body class="bg-shop-bg text-gray-800 font-sans overflow-hidden h-screen w-screen relative selection:bg-sensei-light selection:text-white">
+<body class="bg-shop-bg text-gray-800 font-sans overflow-hidden h-screen w-screen relative selection:bg-sensei-primary selection:text-white">
 
     <!-- ========================================== -->
     <!-- 1. SYMULACJA STRONY SKLEPU (TŁO)          -->
@@ -91,7 +88,7 @@
         <main class="max-w-7xl mx-auto px-4 py-8">
             <h1 class="text-2xl font-bold mb-4">Polecane dla Ciebie</h1>
             
-            <!-- NOWOŚĆ: KATEGORIE (ZAKŁADKI) SKLEPU -->
+            <!-- KATEGORIE (ZAKŁADKI) SKLEPU -->
             <div class="flex gap-6 mb-6 border-b border-gray-200" id="category-tabs">
                 <button onclick="filterShop('all')" id="tab-all" class="shop-tab pb-2 text-sm font-bold text-shop-primary border-b-2 border-shop-primary">Wszystko</button>
                 <button onclick="filterShop('laptopy')" id="tab-laptopy" class="shop-tab pb-2 text-sm font-medium text-gray-500 hover:text-shop-primary border-b-2 border-transparent">Laptopy</button>
@@ -109,29 +106,48 @@
     <!-- ========================================== -->
     <!-- 2. PRZYCISK SYMULUJĄCY IKONĘ ROZSZERZENIA  -->
     <!-- ========================================== -->
-    <button onclick="toggleExtension()" id="ext-trigger-btn" class="fixed right-6 bottom-6 w-16 h-16 bg-sensei-dark rounded-full shadow-2xl flex items-center justify-center cursor-pointer hover:scale-110 transition-transform z-50 group border-2 border-sensei-light">
-        <svg class="w-8 h-8 text-white group-hover:animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+    <button onclick="toggleExtension()" id="ext-trigger-btn" class="fixed right-6 bottom-6 w-16 h-16 bg-white rounded-full shadow-2xl flex items-center justify-center cursor-pointer hover:scale-110 transition-transform z-50 group border border-slate-200">
+        <!-- Zminiaturyzowane logo na przycisku pływającym -->
+        <svg class="w-10 h-10 group-hover:scale-110 transition-transform" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M50 15 L85 35 L85 75 L50 95 L15 75 L15 35 Z" stroke="#163b65" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M50 15 L50 95 M15 35 L85 75 M15 75 L85 35" stroke="#163b65" stroke-width="1.5" stroke-dasharray="4 4"/>
+            <circle cx="50" cy="15" r="4" fill="#163b65"/><circle cx="85" cy="35" r="4" fill="#163b65"/><circle cx="85" cy="75" r="4" fill="#163b65"/><circle cx="50" cy="95" r="4" fill="#163b65"/><circle cx="15" cy="75" r="4" fill="#163b65"/><circle cx="15" cy="35" r="4" fill="#163b65"/>
+            <path d="M45 45 L75 30 L60 65 L55 55 L45 45 Z" fill="#ffffff" stroke="#163b65" stroke-width="3" stroke-linejoin="round"/>
+            <line x1="55" y1="55" x2="40" y2="70" stroke="#163b65" stroke-width="3" stroke-linecap="round"/>
+        </svg>
         <div class="absolute -top-3 -right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow">Sensei AI</div>
     </button>
 
     <!-- ========================================== -->
     <!-- 3. OVERLAY ROZSZERZENIA SENSEI AI          -->
     <!-- ========================================== -->
-    <aside id="sensei-panel" class="fixed top-0 right-0 h-full w-[400px] sensei-panel-bg shadow-2xl z-40 slide-out transition-transform duration-500 flex flex-col border-l border-sensei-light/30 text-white">
+    <aside id="sensei-panel" class="fixed top-0 right-0 h-full w-[400px] bg-sensei-bg shadow-2xl z-40 slide-out transition-transform duration-500 flex flex-col border-l border-slate-200 text-slate-800">
         
-        <!-- Header Sensei -->
-        <div class="px-5 py-4 border-b border-white/10 flex items-center justify-between shrink-0">
+        <!-- Header Sensei (Białe tło dla kontrastu z logo) -->
+        <div class="px-5 py-4 border-b border-slate-200 bg-white flex items-center justify-between shrink-0">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-sensei-light to-sensei-accent flex items-center justify-center shadow-lg">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                </div>
-                <h2 class="font-bold text-xl tracking-wide font-sans">Sensei <span class="text-sensei-accent font-light">AI</span></h2>
+                <!-- NOWE LOGO (Odtworzone wektorowo na podstawie zdjęcia) -->
+                <svg class="w-12 h-12" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Metka -->
+                    <path d="M60 15 L95 15 L95 50 L70 75 L35 40 Z" fill="none" stroke="#163b65" stroke-width="3" stroke-linejoin="round"/>
+                    <circle cx="82" cy="28" r="3" fill="#163b65"/>
+                    <!-- Sieć / Hexagon -->
+                    <path d="M50 25 L80 40 L80 75 L50 90 L20 75 L20 40 Z" stroke="#163b65" stroke-width="3" stroke-linejoin="round"/>
+                    <path d="M50 25 L50 90 M20 40 L80 75 M20 75 L80 40" stroke="#163b65" stroke-width="1.5" stroke-dasharray="4 4"/>
+                    <!-- Węzły sieci -->
+                    <circle cx="50" cy="25" r="4" fill="#163b65"/><circle cx="80" cy="40" r="4" fill="#163b65"/><circle cx="80" cy="75" r="4" fill="#163b65"/><circle cx="50" cy="90" r="4" fill="#163b65"/><circle cx="20" cy="75" r="4" fill="#163b65"/><circle cx="20" cy="40" r="4" fill="#163b65"/>
+                    <!-- Kursor (Wyśrodkowany) -->
+                    <path d="M40 45 L70 30 L55 65 L50 55 L40 45 Z" fill="#ffffff" stroke="#163b65" stroke-width="3" stroke-linejoin="round"/>
+                    <line x1="50" y1="55" x2="35" y2="70" stroke="#163b65" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+                <!-- Napis dopasowany stylem do logo -->
+                <h2 class="font-bold text-2xl tracking-wide font-sans text-sensei-primary">Sensei <span class="font-normal">AI</span></h2>
             </div>
             <div class="flex items-center gap-2">
-                <button onclick="togglePitchModal()" class="text-xs bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-md transition-colors text-white/90">
+                <button onclick="togglePitchModal()" class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-md transition-colors text-slate-700 font-medium border border-slate-200">
                     O projekcie
                 </button>
-                <button onclick="toggleExtension()" class="text-white/50 hover:text-white transition-colors p-1">
+                <button onclick="toggleExtension()" class="text-slate-400 hover:text-sensei-primary transition-colors p-1">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
@@ -142,66 +158,66 @@
             
             <!-- Opis / Wprowadzenie -->
             <div>
-                <p class="text-sm text-gray-300 leading-relaxed">
+                <p class="text-sm text-slate-600 leading-relaxed">
                     Opisz produkt własnymi słowami. Znajdę dla Ciebie najlepsze dopasowania bez potrzeby wpisywania dokładnych nazw.
                 </p>
             </div>
 
             <!-- Gotowe scenariusze (Skróty do dema) -->
             <div class="space-y-2">
-                <p class="text-[11px] uppercase tracking-wider text-sensei-light font-semibold">Gotowe scenariusze (kliknij):</p>
+                <p class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">Gotowe scenariusze (kliknij):</p>
                 <div class="flex flex-wrap gap-2">
-                    <button onclick="runScenario('wygodne buty do biegania wodoodporne')" class="text-left text-xs bg-black/20 hover:bg-sensei-light/30 border border-sensei-light/20 px-3 py-2 rounded-lg transition-colors leading-tight">
+                    <button onclick="runScenario('wygodne buty do biegania wodoodporne')" class="text-left text-xs bg-white hover:bg-blue-50 border border-slate-200 hover:border-sensei-light px-3 py-2 rounded-lg transition-colors leading-tight shadow-sm font-medium text-slate-700">
                         🏃‍♂️ Wygodne buty do biegania wodoodporne
                     </button>
-                    <button onclick="runScenario('lekkie słuchawki bezprzewodowe do ćwiczeń')" class="text-left text-xs bg-black/20 hover:bg-sensei-light/30 border border-sensei-light/20 px-3 py-2 rounded-lg transition-colors leading-tight">
+                    <button onclick="runScenario('lekkie słuchawki bezprzewodowe do ćwiczeń')" class="text-left text-xs bg-white hover:bg-blue-50 border border-slate-200 hover:border-sensei-light px-3 py-2 rounded-lg transition-colors leading-tight shadow-sm font-medium text-slate-700">
                         🎧 Lekkie słuchawki bezprzewodowe
                     </button>
-                    <button onclick="runScenario('elegancki drewniany zegarek męski')" class="text-left text-xs bg-black/20 hover:bg-sensei-light/30 border border-sensei-light/20 px-3 py-2 rounded-lg transition-colors leading-tight">
+                    <button onclick="runScenario('elegancki drewniany zegarek męski')" class="text-left text-xs bg-white hover:bg-blue-50 border border-slate-200 hover:border-sensei-light px-3 py-2 rounded-lg transition-colors leading-tight shadow-sm font-medium text-slate-700">
                         ⌚ Drewniany zegarek męski
                     </button>
                 </div>
             </div>
 
             <!-- Pole wyszukiwania -->
-            <div class="relative mt-2">
-                <textarea id="ai-search-input" rows="3" placeholder="Np. szukam lekkiej kurtki na wiosnę, czarnej, z kapturem..." class="w-full bg-black/30 border border-white/20 rounded-xl py-3 px-4 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-sensei-light focus:ring-1 focus:ring-sensei-light resize-none transition-all"></textarea>
-                <button onclick="triggerSearch()" id="search-btn" class="absolute bottom-3 right-3 bg-sensei-light hover:bg-sensei-accent text-white rounded-lg px-3 py-2 transition-colors flex items-center justify-center shadow-lg group">
-                    <span class="mr-2 text-xs font-bold">✨ Szukaj AI</span>
-                    <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            <div class="relative mt-2 shadow-sm rounded-xl">
+                <textarea id="ai-search-input" rows="3" placeholder="Np. szukam lekkiej kurtki na wiosnę, czarnej, z kapturem..." class="w-full bg-white border border-slate-300 rounded-xl py-3 px-4 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-sensei-primary focus:ring-1 focus:ring-sensei-primary resize-none transition-all shadow-inner"></textarea>
+                <button onclick="triggerSearch()" id="search-btn" class="absolute bottom-3 right-3 bg-sensei-primary hover:bg-sensei-light text-white rounded-lg px-4 py-2 transition-colors flex items-center justify-center shadow-md group">
+                    <span class="mr-2 text-xs font-bold tracking-wide">Szukaj AI</span>
+                    <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                 </button>
             </div>
             <div class="flex justify-start px-1 mt-1 mb-4">
-                <button onclick="enhancePrompt()" id="enhance-btn" class="text-[11px] text-sensei-accent hover:text-white hover:underline transition-colors flex items-center gap-1">
+                <button onclick="enhancePrompt()" id="enhance-btn" class="text-[11px] text-sensei-accent font-semibold hover:text-sensei-primary hover:underline transition-colors flex items-center gap-1">
                     ✨ AI: Pomóż mi opisać produkt
                 </button>
             </div>
 
             <!-- Obszar wyników -->
-            <div class="flex-1 bg-black/20 rounded-xl border border-white/10 p-4 min-h-[250px] relative">
+            <div class="flex-1 bg-white rounded-xl border border-slate-200 shadow-sm p-4 min-h-[250px] relative">
                 
                 <!-- Stan pusty -->
-                <div id="results-empty" class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 opacity-50">
-                    <svg class="w-12 h-12 mb-3 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    <p class="text-sm">Wyniki wyszukiwania pojawią się tutaj.</p>
+                <div id="results-empty" class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 opacity-60">
+                    <svg class="w-12 h-12 mb-3 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <p class="text-sm text-slate-500">Wyniki wyszukiwania pojawią się tutaj.</p>
                 </div>
 
                 <!-- Ładowanie (Spinner) -->
-                <div id="results-loading" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-sensei-bg/80 backdrop-blur-sm rounded-xl z-10">
-                    <svg class="w-10 h-10 text-sensei-accent animate-spin-slow mb-4" fill="none" viewBox="0 0 24 24">
+                <div id="results-loading" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-white/90 backdrop-blur-sm rounded-xl z-10">
+                    <svg class="w-10 h-10 text-sensei-primary animate-spin mb-4" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <p class="text-sm font-medium text-sensei-accent animate-pulse">✨ Gemini AI analizuje opis...</p>
-                    <p class="text-xs text-gray-400 mt-1">Generowanie rekomendacji w locie</p>
+                    <p class="text-sm font-bold text-sensei-primary animate-pulse">✨ Przetwarzanie zapytania...</p>
+                    <p class="text-xs text-slate-500 mt-1">Łączenie z silnikiem Gemini</p>
                 </div>
 
                 <!-- Opcja porównania (Pojawia się po wynikach) -->
-                <div id="ai-compare-container" class="hidden mb-4 border-b border-white/10 pb-4">
-                    <button onclick="compareProductsAI()" id="compare-btn" class="w-full bg-sensei-dark/80 hover:bg-sensei-dark border border-sensei-accent text-xs text-white py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg">
-                        ⚖️ Poproś AI o porównanie tych wyników
+                <div id="ai-compare-container" class="hidden mb-4 border-b border-slate-200 pb-4">
+                    <button onclick="compareProductsAI()" id="compare-btn" class="w-full bg-slate-100 hover:bg-slate-200 border border-slate-300 text-xs text-slate-700 font-bold py-2.5 px-3 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm">
+                        ⚖️ Poproś AI o porównanie wyników
                     </button>
-                    <div id="compare-result" class="hidden mt-3 p-3 bg-sensei-bg rounded-lg text-xs border border-sensei-accent/30 text-gray-200 leading-relaxed shadow-inner"></div>
+                    <div id="compare-result" class="hidden mt-3 p-3 bg-blue-50 rounded-lg text-xs border border-blue-200 text-slate-800 leading-relaxed shadow-inner"></div>
                 </div>
 
                 <!-- Wyniki -->
@@ -212,21 +228,28 @@
         </div>
         
         <!-- Footer Sensei -->
-        <div class="px-5 py-3 border-t border-white/10 bg-black/20 text-center">
-            <p class="text-[10px] text-gray-400">Powered by Sensei AI Engine v1.0 MVP</p>
+        <div class="px-5 py-3 border-t border-slate-200 bg-white text-center">
+            <p class="text-[10px] text-slate-400 font-medium">Powered by Sensei AI Engine v1.0 MVP</p>
         </div>
     </aside>
 
     <!-- ========================================== -->
     <!-- 4. MODAL "O PROJEKCIE" (PITCH NA ZAJĘCIA)  -->
     <!-- ========================================== -->
-    <div id="pitch-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+    <div id="pitch-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
         <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]" id="pitch-modal-content">
             <!-- Header -->
-            <div class="bg-sensei-dark text-white px-6 py-5 flex items-center justify-between">
+            <div class="bg-sensei-primary text-white px-6 py-5 flex items-center justify-between">
                 <div>
-                    <h2 class="text-2xl font-bold">Sensei AI</h2>
-                    <p class="text-sensei-accent text-sm font-medium mt-1">"Opisz produkt – znajdziemy go za Ciebie"</p>
+                    <h2 class="text-2xl font-bold flex items-center gap-2">
+                        <svg class="w-8 h-8" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M50 25 L80 40 L80 75 L50 90 L20 75 L20 40 Z" stroke="#ffffff" stroke-width="3" stroke-linejoin="round"/>
+                            <circle cx="50" cy="25" r="4" fill="#ffffff"/><circle cx="80" cy="40" r="4" fill="#ffffff"/><circle cx="80" cy="75" r="4" fill="#ffffff"/>
+                            <path d="M40 45 L70 30 L55 65 L50 55 L40 45 Z" fill="#ffffff" stroke="#163b65" stroke-width="2" stroke-linejoin="round"/>
+                        </svg>
+                        Sensei AI
+                    </h2>
+                    <p class="text-blue-200 text-sm font-medium mt-1">"Opisz produkt – znajdziemy go za Ciebie"</p>
                 </div>
                 <button onclick="togglePitchModal()" class="text-white/70 hover:text-white hover:bg-white/10 rounded-full p-2 transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -234,26 +257,26 @@
             </div>
             
             <!-- Body -->
-            <div class="p-6 md:p-8 overflow-y-auto text-gray-800">
+            <div class="p-6 md:p-8 overflow-y-auto text-slate-800">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <!-- Kolumna Lewa -->
                     <div class="space-y-6">
                         <div>
-                            <h3 class="text-xs uppercase font-bold text-gray-400 tracking-wider mb-2">🔴 Problem</h3>
-                            <p class="text-sm leading-relaxed bg-red-50 p-3 rounded-lg border border-red-100">
+                            <h3 class="text-xs uppercase font-bold text-slate-400 tracking-wider mb-2">🔴 Problem</h3>
+                            <p class="text-sm leading-relaxed bg-red-50 p-3 rounded-lg border border-red-100 text-slate-700">
                                 Obecne wyszukiwarki w sklepach internetowych są sztywne – wymagają podawania dokładnych nazw produktów lub przedzierania się przez dziesiątki filtrów. Nie rozumieją intencji ani języka naturalnego użytkownika.
                             </p>
                         </div>
                         <div>
-                            <h3 class="text-xs uppercase font-bold text-gray-400 tracking-wider mb-2">🟢 Rozwiązanie</h3>
-                            <p class="text-sm leading-relaxed bg-green-50 p-3 rounded-lg border border-green-100">
+                            <h3 class="text-xs uppercase font-bold text-slate-400 tracking-wider mb-2">🟢 Rozwiązanie</h3>
+                            <p class="text-sm leading-relaxed bg-green-50 p-3 rounded-lg border border-green-100 text-slate-700">
                                 Rozszerzenie do przeglądarki (Chrome), które działa jako nakładka na najpopularniejsze sklepy e-commerce. Przetwarza opisy pisane ludzkim językiem na precyzyjne zapytania i od razu serwuje dopasowane wyniki z danego sklepu.
                             </p>
                         </div>
                         <div>
-                            <h3 class="text-xs uppercase font-bold text-gray-400 tracking-wider mb-2">🎯 Grupa Docelowa</h3>
-                            <p class="text-sm text-gray-600 flex items-center gap-2">
-                                <svg class="w-5 h-5 text-sensei-light" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                            <h3 class="text-xs uppercase font-bold text-slate-400 tracking-wider mb-2">🎯 Grupa Docelowa</h3>
+                            <p class="text-sm text-slate-600 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-sensei-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                                 Kupujący online w wieku 18-35 lat (głównie desktop).
                             </p>
                         </div>
@@ -262,29 +285,29 @@
                     <!-- Kolumna Prawa -->
                     <div class="space-y-6">
                         <div>
-                            <h3 class="text-xs uppercase font-bold text-gray-400 tracking-wider mb-2">💼 Model Biznesowy</h3>
-                            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3">
-                                <div class="flex justify-between items-center pb-2 border-b border-gray-200">
+                            <h3 class="text-xs uppercase font-bold text-slate-400 tracking-wider mb-2">💼 Model Biznesowy</h3>
+                            <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-3">
+                                <div class="flex justify-between items-center pb-2 border-b border-slate-200">
                                     <span class="font-semibold text-sm">Freemium</span>
-                                    <span class="bg-gray-200 text-xs px-2 py-1 rounded font-bold">Darmowe</span>
+                                    <span class="bg-slate-200 text-xs px-2 py-1 rounded font-bold">Darmowe</span>
                                 </div>
-                                <p class="text-xs text-gray-500">Do 20 wyszukań AI dziennie za darmo.</p>
+                                <p class="text-xs text-slate-500">Do 20 wyszukań AI dziennie za darmo.</p>
                                 
                                 <div class="flex justify-between items-center pt-2">
-                                    <span class="font-semibold text-sm text-sensei-dark">Sensei Premium</span>
-                                    <span class="bg-sensei-light text-white text-xs px-2 py-1 rounded font-bold">9 PLN / mies.</span>
+                                    <span class="font-semibold text-sm text-sensei-primary">Sensei Premium</span>
+                                    <span class="bg-sensei-primary text-white text-xs px-2 py-1 rounded font-bold">9 PLN / mies.</span>
                                 </div>
-                                <p class="text-xs text-gray-500">Nielimitowane wyszukiwania, alerty cenowe, analiza opinii produktowych.</p>
+                                <p class="text-xs text-slate-500">Nielimitowane wyszukiwania, alerty cenowe, analiza opinii produktowych.</p>
                             </div>
                         </div>
                         <div>
-                            <h3 class="text-xs uppercase font-bold text-gray-400 tracking-wider mb-2">👥 Zespół (Founders)</h3>
-                            <ul class="text-sm text-gray-700 space-y-2 font-medium">
-                                <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-sensei-light"></div> Melania Leonkova</li>
-                                <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-sensei-light"></div> Kyrylo Maidanyk</li>
-                                <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-sensei-light"></div> Alisa Tykha</li>
-                                <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-sensei-light"></div> Andrii Shatilov</li>
-                                <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-sensei-light"></div> Katsiaryna Maslouskaya</li>
+                            <h3 class="text-xs uppercase font-bold text-slate-400 tracking-wider mb-2">👥 Zespół (Founders)</h3>
+                            <ul class="text-sm text-slate-700 space-y-2 font-medium">
+                                <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-sensei-primary"></div> Melania Leonkova</li>
+                                <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-sensei-primary"></div> Kyrylo Maidanyk</li>
+                                <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-sensei-primary"></div> Alisa Tykha</li>
+                                <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-sensei-primary"></div> Andrii Shatilov</li>
+                                <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-sensei-primary"></div> Katsiaryna Maslouskaya</li>
                             </ul>
                         </div>
                     </div>
@@ -368,13 +391,11 @@
 
         // Filtrowanie z zakładek
         function filterShop(category) {
-            // Reset stylów wszystkich zakładek
             document.querySelectorAll('.shop-tab').forEach(tab => {
                 tab.classList.remove('font-bold', 'text-shop-primary', 'border-shop-primary');
                 tab.classList.add('font-medium', 'text-gray-500', 'border-transparent');
             });
             
-            // Nadanie stylu aktywnej zakładce
             const activeTab = document.getElementById(`tab-${category}`);
             activeTab.classList.remove('font-medium', 'text-gray-500', 'border-transparent');
             activeTab.classList.add('font-bold', 'text-shop-primary', 'border-shop-primary');
@@ -408,7 +429,6 @@
             }
         }
 
-        // Kontrola Modala Pitch Deck
         function togglePitchModal() {
             const modal = document.getElementById('pitch-modal');
             const content = document.getElementById('pitch-modal-content');
@@ -437,8 +457,8 @@
             triggerSearch();
         }
 
-        // TUTAJ MOŻESZ WPISAĆ SWÓJ KLUCZ API:
-        const apiKey = "AIzaSyCBC91rq-DwP05R7vub5YyUMxIGF0Mt5sk"; 
+        // TUTAJ JEST TWÓJ KLUCZ API:
+        const apiKey = ""; 
         const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
         const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
 
@@ -498,25 +518,13 @@
             compareContainer.classList.add('hidden');
             compareResult.classList.add('hidden');
             compareBtn.classList.remove('hidden');
-            compareBtn.innerHTML = '⚖️ Poproś AI o porównanie tych wyników';
+            compareBtn.innerHTML = '⚖️ Poproś AI o porównanie wyników';
             resultsContainer.innerHTML = '';
             currentAIProducts = []; 
             
             loadingState.classList.remove('hidden');
             searchBtn.disabled = true;
             searchBtn.classList.add('opacity-50');
-
-            // Jeśli klucz API jest pusty, od razu przejdź do trybu offline (żeby nie marnować czasu na błąd)
-            if (!apiKey) {
-                setTimeout(() => {
-                    loadingState.classList.add('hidden');
-                    searchBtn.disabled = false;
-                    searchBtn.classList.remove('opacity-50');
-                    resultsContainer.classList.remove('hidden');
-                    displayFallbackResults(query.toLowerCase());
-                }, 1500); // 1.5s symulacji ładowania
-                return;
-            }
 
             try {
                 const payload = {
@@ -588,80 +596,80 @@
             const resultsContainer = document.getElementById('results-container');
             
             const html = data.products.map((item, index) => `
-                <div class="bg-black/30 rounded-lg p-3 flex flex-col border border-white/5 hover:border-sensei-light/50 transition-colors group">
+                <div class="bg-white rounded-xl p-4 flex flex-col border border-slate-200 shadow-sm hover:shadow-md hover:border-sensei-light transition-all group">
                     <div class="flex gap-4">
-                        <!-- Kontener na zdjęcie generowane przez AI z animacją ładowania -->
-                        <div id="img-box-${index}" class="relative w-20 h-20 rounded shadow-md shrink-0 bg-black/50 border border-white/10 flex flex-col items-center justify-center overflow-hidden">
-                            <svg class="w-5 h-5 text-sensei-accent animate-spin mb-1" fill="none" viewBox="0 0 24 24">
+                        <!-- Kontener na zdjęcie generowane przez AI -->
+                        <div id="img-box-${index}" class="relative w-24 h-24 rounded-lg shadow-sm shrink-0 bg-slate-100 border border-slate-200 flex flex-col items-center justify-center overflow-hidden">
+                            <svg class="w-6 h-6 text-sensei-primary animate-spin mb-1" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            <span class="text-[8px] text-gray-400">Rysowanie...</span>
+                            <span class="text-[9px] text-slate-500 font-medium">Szkicowanie...</span>
                             <img id="img-actual-${index}" src="" alt="${item.title}" class="absolute inset-0 w-full h-full object-cover hidden transition-opacity duration-500 opacity-0">
                         </div>
 
                         <div class="flex-1 flex flex-col justify-between">
                             <div>
-                                <h4 class="text-sm font-semibold leading-tight mb-1 group-hover:text-sensei-accent transition-colors">${item.title}</h4>
-                                <span class="text-[10px] bg-white/10 text-gray-300 px-2 py-0.5 rounded-full inline-block border border-white/5 mb-2">${item.store}</span>
-                                <p class="text-xs text-gray-400 italic leading-snug">✨ ${item.reason}</p>
+                                <h4 class="text-sm font-bold text-slate-800 leading-tight mb-1 group-hover:text-sensei-accent transition-colors">${item.title}</h4>
+                                <span class="text-[10px] bg-slate-100 text-slate-600 font-medium px-2 py-0.5 rounded-full inline-block border border-slate-200 mb-2">${item.store}</span>
+                                <p class="text-xs text-slate-500 italic leading-snug">✨ ${item.reason}</p>
                             </div>
-                            <div class="flex items-end justify-between mt-2">
-                                <span class="font-bold text-sensei-accent text-sm">${item.price}</span>
-                                <button class="text-[10px] uppercase tracking-wider font-bold bg-white/10 hover:bg-sensei-light px-3 py-1.5 rounded transition-colors">
+                            <div class="flex items-end justify-between mt-3">
+                                <span class="font-bold text-sensei-primary text-base">${item.price}</span>
+                                <button class="text-[10px] uppercase tracking-wider font-bold bg-sensei-primary hover:bg-sensei-light text-white px-3 py-1.5 rounded transition-colors">
                                     Zobacz
                                 </button>
                             </div>
                         </div>
                     </div>
-                    <div class="mt-3 pt-3 border-t border-white/10 flex flex-col gap-1.5">
-                        <button onclick="analyzeReviews(this, '${item.title.replace(/'/g, "\\'")}')" class="text-[11px] text-gray-300 hover:text-white flex items-center gap-1 transition-colors w-full justify-center bg-black/20 hover:bg-sensei-light/30 py-1.5 rounded-lg border border-white/10 hover:border-sensei-light/50">
+                    <div class="mt-4 pt-4 border-t border-slate-100 flex flex-col gap-2">
+                        <button onclick="analyzeReviews(this, '${item.title.replace(/'/g, "\\'")}')" class="text-xs text-slate-600 hover:text-sensei-primary flex items-center gap-1 transition-colors w-full justify-center bg-slate-50 hover:bg-blue-50 py-2 rounded-lg border border-slate-200 font-medium">
                             ✨ Analizuj opinie
                         </button>
-                        <div class="analysis-result hidden text-xs bg-black/40 p-2.5 rounded-lg border border-white/5 shadow-inner"></div>
+                        <div class="analysis-result hidden text-xs bg-slate-50 p-3 rounded-lg border border-slate-200 shadow-inner"></div>
                         
-                        <button onclick="findCheaperAlternative(this, '${item.title.replace(/'/g, "\\'")}', '${item.price}')" class="text-[11px] text-sensei-accent hover:text-white flex items-center gap-1 transition-colors w-full justify-center bg-black/20 hover:bg-sensei-accent/30 py-1.5 rounded-lg border border-sensei-accent/20">
+                        <button onclick="findCheaperAlternative(this, '${item.title.replace(/'/g, "\\'")}', '${item.price}')" class="text-xs text-sensei-primary hover:text-white flex items-center gap-1 transition-colors w-full justify-center bg-blue-50 hover:bg-sensei-primary py-2 rounded-lg border border-blue-200 font-medium">
                             💸 Znajdź tańszy zamiennik (AI)
                         </button>
-                        <div class="alternative-result hidden text-xs bg-sensei-bg p-2.5 rounded-lg border border-sensei-accent/30 shadow-inner text-gray-200"></div>
+                        <div class="alternative-result hidden text-xs bg-blue-50 p-3 rounded-lg border border-blue-200 shadow-inner text-slate-700"></div>
+
+                        <button onclick="suggestAccessories(this, '${item.title.replace(/'/g, "\\'")}')" class="text-xs text-purple-600 hover:text-white flex items-center gap-1 transition-colors w-full justify-center bg-purple-50 hover:bg-purple-600 py-2 rounded-lg border border-purple-200 font-medium">
+                            🎁 Dobierz akcesoria (AI)
+                        </button>
+                        <div class="accessories-result hidden text-xs bg-purple-50 p-3 rounded-lg border border-purple-200 shadow-inner text-slate-700"></div>
                     </div>
                 </div>
             `).join('');
 
             resultsContainer.innerHTML = `
-                <div class="text-xs text-sensei-accent flex flex-col gap-1.5 pb-3 border-b border-white/10 mb-2">
+                <div class="text-xs text-sensei-primary flex flex-col gap-2 pb-4 border-b border-slate-200 mb-2">
                     <div class="flex items-center gap-1.5 font-bold uppercase tracking-wider text-[10px]">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                         Analiza Gemini & Imagen
                     </div>
-                    <span class="text-gray-300 text-sm leading-snug">${data.summary}</span>
+                    <span class="text-slate-600 text-sm leading-snug font-medium">${data.summary}</span>
                 </div>
                 ${html}
             `;
 
-            // Asynchroniczne wywołanie Imagen API dla każdego wygenerowanego produktu
             data.products.forEach((item, index) => {
                 generateProductImage(item.imgText || item.title).then(imgBase64 => {
                     const imgEl = document.getElementById(`img-actual-${index}`);
                     const boxEl = document.getElementById(`img-box-${index}`);
                     if(imgEl && boxEl) {
-                        // Usuwamy ikonę ładowania z kontenera
                         boxEl.innerHTML = '';
                         boxEl.appendChild(imgEl);
                         imgEl.src = imgBase64;
                         imgEl.classList.remove('hidden');
-                        // Dodajemy efekt fade-in
                         setTimeout(() => imgEl.classList.remove('opacity-0'), 50);
                     }
                 }).catch(e => {
-                    console.error("Błąd generowania obrazu:", e);
-                    // W razie błędu API wstawiamy szary placeholder tekstowy
                     const imgEl = document.getElementById(`img-actual-${index}`);
                     const boxEl = document.getElementById(`img-box-${index}`);
                     if(imgEl && boxEl) {
                         boxEl.innerHTML = '';
                         boxEl.appendChild(imgEl);
-                        imgEl.src = `https://placehold.co/150x150/2D4A1E/ffffff?text=${encodeURIComponent(item.title.split(' ')[0])}`;
+                        imgEl.src = `https://placehold.co/150x150/f8f9fa/163b65?text=${encodeURIComponent(item.title.split(' ')[0])}`;
                         imgEl.classList.remove('hidden', 'opacity-0');
                     }
                 });
@@ -669,13 +677,12 @@
         }
 
         // ==========================================
-        // FUNKCJA DLA TRYBU OFFLINE (GOTOWE DANE Z PRAWDZIWYMI FOTKAMI)
+        // FUNKCJA DLA TRYBU OFFLINE
         // ==========================================
         function displayFallbackResults(query) {
             const resultsContainer = document.getElementById('results-container');
             let results = db.fallback;
 
-            // Prosta heurystyka dopasowania (Tryb Offline)
             if (query.includes('buty') || query.includes('biegania') || query.includes('wodoodporne')) {
                 results = db.shoes;
             } else if (query.includes('słuchawki') || query.includes('audio') || query.includes('ćwiczeń')) {
@@ -686,32 +693,52 @@
                 results = db.gift;
             }
 
-            // Renderowanie wyników z wbudowanej bazy (fallback)
             const html = results.map(item => `
-                <div class="bg-black/30 rounded-lg p-3 flex gap-4 border border-white/5 hover:border-sensei-light/50 transition-colors group">
-                    <img src="${item.img}" alt="${item.title}" class="w-20 h-20 rounded object-cover shadow-md bg-white/10 shrink-0">
-                    <div class="flex-1 flex flex-col justify-between">
-                        <div>
-                            <h4 class="text-sm font-semibold leading-tight mb-1 group-hover:text-sensei-accent transition-colors">${item.title}</h4>
-                            <span class="text-[10px] bg-white/10 text-gray-300 px-2 py-0.5 rounded-full inline-block border border-white/5">${item.store}</span>
-                            <p class="text-xs text-gray-500 italic mt-1">Wynik przygotowany (Offline)</p>
+                <div class="bg-white rounded-xl p-4 flex flex-col border border-slate-200 shadow-sm hover:shadow-md transition-all group">
+                    <div class="flex gap-4">
+                        <img src="${item.img}" alt="${item.title}" class="w-24 h-24 rounded-lg object-cover shadow-sm bg-slate-100 shrink-0 border border-slate-200">
+                        <div class="flex-1 flex flex-col justify-between">
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-800 leading-tight mb-1 group-hover:text-sensei-primary transition-colors">${item.title}</h4>
+                                <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full inline-block border border-slate-200 font-medium">${item.store}</span>
+                                <p class="text-xs text-slate-400 italic mt-1 font-medium">Wynik przygotowany (Offline)</p>
+                            </div>
+                            <div class="flex items-end justify-between mt-2">
+                                <span class="font-bold text-sensei-primary text-base">${item.price}</span>
+                                <button class="text-[10px] uppercase tracking-wider font-bold bg-sensei-primary hover:bg-sensei-light text-white px-3 py-1.5 rounded transition-colors">
+                                    Zobacz
+                                </button>
+                            </div>
                         </div>
-                        <div class="flex items-end justify-between mt-2">
-                            <span class="font-bold text-sensei-accent text-sm">${item.price}</span>
-                            <button class="text-[10px] uppercase tracking-wider font-bold bg-white/10 hover:bg-sensei-light px-3 py-1.5 rounded transition-colors">
-                                Zobacz
-                            </button>
-                        </div>
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-t border-slate-100 flex flex-col gap-2 w-full">
+                        <button onclick="analyzeReviews(this, '${item.title.replace(/'/g, "\\'")}')" class="text-xs text-slate-600 hover:text-sensei-primary flex items-center gap-1 transition-colors w-full justify-center bg-slate-50 hover:bg-blue-50 py-2 rounded-lg border border-slate-200 font-medium">
+                            ✨ Analizuj opinie
+                        </button>
+                        <div class="analysis-result hidden text-xs bg-slate-50 p-3 rounded-lg border border-slate-200 shadow-inner"></div>
+                        
+                        <button onclick="findCheaperAlternative(this, '${item.title.replace(/'/g, "\\'")}', '${item.price}')" class="text-xs text-sensei-primary hover:text-white flex items-center gap-1 transition-colors w-full justify-center bg-blue-50 hover:bg-sensei-primary py-2 rounded-lg border border-blue-200 font-medium">
+                            💸 Znajdź tańszy zamiennik (AI)
+                        </button>
+                        <div class="alternative-result hidden text-xs bg-blue-50 p-3 rounded-lg border border-blue-200 shadow-inner text-slate-700"></div>
+
+                        <button onclick="suggestAccessories(this, '${item.title.replace(/'/g, "\\'")}')" class="text-xs text-purple-600 hover:text-white flex items-center gap-1 transition-colors w-full justify-center bg-purple-50 hover:bg-purple-600 py-2 rounded-lg border border-purple-200 font-medium">
+                            🎁 Dobierz akcesoria (AI)
+                        </button>
+                        <div class="accessories-result hidden text-xs bg-purple-50 p-3 rounded-lg border border-purple-200 shadow-inner text-slate-700"></div>
                     </div>
                 </div>
             `).join('');
 
             resultsContainer.innerHTML = `
-                <div class="text-xs text-yellow-500 flex items-center gap-1.5 pb-2 border-b border-white/10 mb-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                    Tryb offline. Aby aktywować AI na żywo, dodaj darmowy klucz API w kodzie.
+                <div class="text-xs text-yellow-600 bg-yellow-50 p-3 rounded-lg flex items-center gap-2 mb-4 border border-yellow-200 shadow-sm font-medium">
+                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    Tryb offline. Używasz bazy awaryjnej.
                 </div>
-                ${html}
+                <div class="flex flex-col gap-4">
+                    ${html}
+                </div>
             `;
         }
 
@@ -726,11 +753,6 @@
 
             const enhanceBtn = document.getElementById('enhance-btn');
             const originalText = enhanceBtn.innerHTML;
-            
-            if (!apiKey) {
-                alert("Aby użyć tej funkcji, musisz podać klucz API w kodzie źródłowym.");
-                return;
-            }
 
             enhanceBtn.innerHTML = `✨ Ulepszanie...`;
             enhanceBtn.disabled = true;
@@ -754,11 +776,6 @@
 
         async function analyzeReviews(btn, title) {
             const container = btn.nextElementSibling;
-            
-            if (!apiKey) {
-                alert("Aby użyć tej funkcji, musisz podać klucz API w kodzie źródłowym.");
-                return;
-            }
             
             btn.innerHTML = `Analizowanie...`;
             btn.disabled = true;
@@ -785,7 +802,7 @@
                 const aiData = JSON.parse(result.candidates[0].content.parts[0].text);
                 btn.classList.add('hidden');
                 container.classList.remove('hidden');
-                container.innerHTML = `<div class="text-yellow-500 font-bold">★ ${aiData.rating}/5</div><div class="text-green-400">+ ${aiData.pros[0]}</div><div class="text-red-400">- ${aiData.cons[0]}</div><div class="text-gray-400 italic text-[10px] mt-1">"${aiData.summary}"</div>`;
+                container.innerHTML = `<div class="text-yellow-600 font-bold mb-1">★ ${aiData.rating}/5</div><div class="text-green-600 font-medium">+ ${aiData.pros[0]}</div><div class="text-red-500 font-medium">- ${aiData.cons[0]}</div><div class="text-slate-500 italic text-[10px] mt-2">"${aiData.summary}"</div>`;
             } catch (e) {
                 btn.innerHTML = `Błąd AI.`;
             }
@@ -807,7 +824,7 @@
                 const result = await fetchWithRetry(geminiUrl, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload) });
                 btn.classList.add('hidden');
                 resDiv.classList.remove('hidden');
-                resDiv.innerHTML = `<div class="font-bold text-sensei-accent mb-1">Werdykt AI</div>${result.candidates[0].content.parts[0].text.replace(/\n/g, '<br>')}`;
+                resDiv.innerHTML = `<div class="font-bold text-sensei-primary mb-1">Werdykt AI</div>${result.candidates[0].content.parts[0].text.replace(/\n/g, '<br>')}`;
             } catch (e) {
                 btn.innerHTML = `Błąd analizy AI.`;
             }
@@ -815,11 +832,6 @@
 
         async function findCheaperAlternative(btn, title, price) {
             const container = btn.nextElementSibling;
-            
-            if (!apiKey) {
-                alert("Aby użyć tej funkcji, musisz podać klucz API w kodzie źródłowym.");
-                return;
-            }
             
             btn.innerHTML = `Szukanie opcji...`;
             btn.disabled = true;
@@ -845,9 +857,65 @@
                 const aiData = JSON.parse(result.candidates[0].content.parts[0].text);
                 btn.classList.add('hidden');
                 container.classList.remove('hidden');
-                container.innerHTML = `<div class="text-sensei-accent font-bold">Alternatywa: ${aiData.altTitle}</div><div class="text-white">${aiData.altPrice}</div><div class="text-gray-400 italic text-[10px]">"${aiData.reason}"</div>`;
+                container.innerHTML = `<div class="text-sensei-primary font-bold mb-1">Alternatywa: ${aiData.altTitle}</div><div class="text-slate-800 font-bold mb-1">${aiData.altPrice}</div><div class="text-slate-500 font-medium italic text-[10px]">"${aiData.reason}"</div>`;
             } catch (e) {
                 btn.innerHTML = `Błąd sieci.`;
+            }
+        }
+
+        async function suggestAccessories(btn, title) {
+            const container = btn.nextElementSibling;
+            
+            btn.innerHTML = `Wyszukiwanie dodatków...`;
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+
+            const payload = {
+                contents: [{ parts: [{ text: `Zaproponuj 2 przydatne, sensowne akcesoria, które warto dokupić do produktu: "${title}".` }] }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            accessories: {
+                                type: "ARRAY",
+                                items: {
+                                    type: "OBJECT",
+                                    properties: {
+                                        name: { type: "STRING", description: "Nazwa akcesorium" },
+                                        price: { type: "STRING", description: "Szacunkowa cena, np. 49,00 zł" },
+                                        reason: { type: "STRING", description: "Krótkie uzasadnienie, max 1 zdanie." }
+                                    },
+                                    required: ["name", "price", "reason"]
+                                }
+                            }
+                        },
+                        required: ["accessories"]
+                    }
+                }
+            };
+
+            try {
+                const result = await fetchWithRetry(geminiUrl, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload) });
+                const aiData = JSON.parse(result.candidates[0].content.parts[0].text);
+                btn.classList.add('hidden');
+                container.classList.remove('hidden');
+                
+                let accHtml = aiData.accessories.map(acc => `
+                    <div class="mb-2 border-b border-purple-100 pb-2 last:border-0 last:pb-0 last:mb-0">
+                        <div class="flex justify-between font-bold text-purple-700 mb-1">
+                            <span>${acc.name}</span>
+                            <span>${acc.price}</span>
+                        </div>
+                        <div class="text-[10px] text-slate-500 font-medium italic">${acc.reason}</div>
+                    </div>
+                `).join('');
+                
+                container.innerHTML = `<div class="font-bold text-[10px] mb-3 text-slate-800 flex items-center gap-1"><svg class="w-3 h-3 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>Polecane dodatki AI:</div>${accHtml}`;
+            } catch (e) {
+                btn.innerHTML = `Błąd sieci.`;
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
             }
         }
 
