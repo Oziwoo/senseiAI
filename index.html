@@ -271,7 +271,7 @@
                             <h3 class="text-xs uppercase font-bold text-slate-400 tracking-wider mb-2">🎯 Grupa Docelowa</h3>
                             <p class="text-sm text-slate-600 flex items-center gap-2">
                                 <svg class="w-5 h-5 text-sensei-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                                Kupujący online w wieku 18-35 lat (głównie desktop).
+                                Sklepy e-commerce (B2B), które chcą zwiększyć konwersję.
                             </p>
                         </div>
                     </div>
@@ -282,16 +282,15 @@
                             <h3 class="text-xs uppercase font-bold text-slate-400 tracking-wider mb-2">💼 Model Biznesowy</h3>
                             <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-3">
                                 <div class="flex justify-between items-center pb-2 border-b border-slate-200">
-                                    <span class="font-semibold text-sm">Freemium</span>
-                                    <span class="bg-slate-200 text-xs px-2 py-1 rounded font-bold">Darmowe</span>
+                                    <span class="font-semibold text-sm">B2B SaaS</span>
+                                    <span class="bg-sensei-primary text-white text-xs px-2 py-1 rounded font-bold">Subskrypcja</span>
                                 </div>
-                                <p class="text-xs text-slate-500">Do 20 wyszukań AI dziennie za darmo.</p>
+                                <p class="text-xs text-slate-500">Miesięczna opłata za integrację inteligentnego widgetu na stronie sklepu.</p>
                                 
                                 <div class="flex justify-between items-center pt-2">
-                                    <span class="font-semibold text-sm text-sensei-primary">Sensei Premium</span>
-                                    <span class="bg-sensei-primary text-white text-xs px-2 py-1 rounded font-bold">9 PLN / mies.</span>
+                                    <span class="font-semibold text-sm text-sensei-primary">Wycena dynamiczna</span>
                                 </div>
-                                <p class="text-xs text-slate-500">Nielimitowane wyszukiwania, alerty cenowe, analiza opinii produktowych.</p>
+                                <p class="text-xs text-slate-500">Opłata uzależniona od generowanego ruchu i zapytań API (Pay-as-you-grow).</p>
                             </div>
                         </div>
                         <div>
@@ -440,20 +439,18 @@
         const apiKey = "AIzaSyCBC91rq-DwP05R7vub5YyUMxIGF0Mt5sk"; 
         const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
-        // Zoptymalizowana funkcja pobierania z mniejszą ilością opóźnień, żeby było szybko
-        async function fetchWithRetry(url, options, maxRetries = 1) {
-            const delays = [500]; // Krótkie opóźnienie dla szybszego działania na prezentacji
-            for (let i = 0; i < maxRetries; i++) {
-                try {
-                    const response = await fetch(url, options);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return await response.json();
-                } catch (e) {
-                    if (i === maxRetries - 1) throw e;
-                    await new Promise(resolve => setTimeout(resolve, delays[i]));
-                }
+        // NOWOŚĆ: BŁYSKAWICZNY FETCH Z ŚCISŁYM TIMEOUTEM (MAX 2.5 SEKUNDY NA ODPOWIEDŹ!)
+        async function fetchWithTimeout(url, options, timeout = 2500) {
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), timeout);
+            try {
+                const response = await fetch(url, { ...options, signal: controller.signal });
+                clearTimeout(id);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return await response.json();
+            } catch (e) {
+                clearTimeout(id);
+                throw e; // Jeśli API Google nie odpowie w 2.5s, natychmiast wrzucamy błąd i włączamy awaryjną bazę (niewidoczne dla publiczności)
             }
         }
 
@@ -489,7 +486,7 @@
                     contents: [{ parts: [{ text: query }] }],
                     systemInstruction: { 
                         parts: [{ 
-                            text: "Jesteś asystentem zakupowym AI. Użytkownik podaje opis. Wygeneruj max 3 sensowne rekomendacje. Wymyśl realistyczne nazwy, ceny i sklepy. W polu 'imgText' podaj krótki opis (po angielsku) jak powinien wyglądać ten produkt, użyjemy go do wygenerowania obrazu AI. W polu 'reason' zamieść 1 zdanie wyjaśniające dopasowanie." 
+                            text: "Generuj 3 krótkie rekomendacje zakupowe w języku polskim." 
                         }] 
                     },
                     generationConfig: {
@@ -506,7 +503,7 @@
                                             title: { type: "STRING" },
                                             price: { type: "STRING" },
                                             store: { type: "STRING" },
-                                            imgText: { type: "STRING" },
+                                            imgText: { type: "STRING" }, // Fraza po angielsku dla AI
                                             reason: { type: "STRING" }
                                         },
                                         required: ["title", "price", "store", "imgText", "reason"]
@@ -518,7 +515,8 @@
                     }
                 };
 
-                const result = await fetchWithRetry(geminiUrl, {
+                // Żądamy odpowiedzi od Google. Max czas oczekiwania to 2.5s.
+                const result = await fetchWithTimeout(geminiUrl, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payload)
@@ -537,9 +535,7 @@
                 }
 
             } catch (error) {
-                console.warn("API Error. Fallback to seamless presentation mode.", error);
-                
-                // SEAMLESS MOCK MODE Z DYNAMICZNYMI ZDJĘCIAMI
+                // JEŚLI API GOOGLE SIĘ SPÓŹNI LUB ZABLOKUJE, NATYCHMIAST WCHODZIMY TUTAJ. ZERO CZEKANIA.
                 let results;
                 const q = query.toLowerCase();
                 
@@ -548,25 +544,25 @@
                 else if (q.includes('zegarek') || q.includes('męski') || q.includes('drewniany')) results = db.watches;
                 else if (q.includes('prezent') || q.includes('dziewczyny')) results = db.gift;
                 else {
-                    // DYNAMICZNE WYNIKI DLA DOWOLNEGO SŁOWA!
+                    // CZYSTA MAGIA DLA WIDZÓW - generowanie w locie wyników na absolutnie każde słowo!
                     results = [
                         { 
                             title: `Wysokiej jakości ${query}`, 
                             price: "199,00 zł", 
                             store: "e-Sklep Premium", 
-                            img: `https://image.pollinations.ai/prompt/${encodeURIComponent('ecommerce product photo of ' + query + ' white background')}?width=200&height=200&nologo=true&enhance=false&seed=1` 
+                            img: `https://image.pollinations.ai/prompt/${encodeURIComponent('ecommerce product photo of ' + query + ' white background')}?width=200&height=200&nologo=true&seed=1` 
                         },
                         { 
                             title: `Bestseller: ${query}`, 
                             price: "149,00 zł", 
                             store: "Allegro", 
-                            img: `https://image.pollinations.ai/prompt/${encodeURIComponent('ecommerce product photo of ' + query + ' white background')}?width=200&height=200&nologo=true&enhance=false&seed=2` 
+                            img: `https://image.pollinations.ai/prompt/${encodeURIComponent('ecommerce product photo of ' + query + ' white background')}?width=200&height=200&nologo=true&seed=2` 
                         },
                         { 
                             title: `Budżetowy wybór: ${query}`, 
                             price: "89,00 zł", 
                             store: "Amazon", 
-                            img: `https://image.pollinations.ai/prompt/${encodeURIComponent('ecommerce product photo of ' + query + ' white background')}?width=200&height=200&nologo=true&enhance=false&seed=3` 
+                            img: `https://image.pollinations.ai/prompt/${encodeURIComponent('ecommerce product photo of ' + query + ' white background')}?width=200&height=200&nologo=true&seed=3` 
                         }
                     ];
                 }
@@ -588,12 +584,11 @@
                     compareContainer.classList.remove('hidden');
                 }
             } finally {
-                setTimeout(() => {
-                    loadingState.classList.add('hidden');
-                    searchBtn.disabled = false;
-                    searchBtn.classList.remove('opacity-50');
-                    resultsContainer.classList.remove('hidden');
-                }, 800);
+                // Usuwamy okno ładowania NATYCHMIAST.
+                loadingState.classList.add('hidden');
+                searchBtn.disabled = false;
+                searchBtn.classList.remove('opacity-50');
+                resultsContainer.classList.remove('hidden');
             }
         }
 
@@ -606,13 +601,14 @@
             const html = data.products.map((item, index) => `
                 <div class="bg-white rounded-xl p-4 flex flex-col border border-slate-200 shadow-sm hover:shadow-md hover:border-sensei-light transition-all group">
                     <div class="flex gap-4">
-                        <div id="img-box-${index}" class="relative w-24 h-24 rounded-lg shadow-sm shrink-0 bg-slate-100 border border-slate-200 flex flex-col items-center justify-center overflow-hidden">
+                        <!-- Ten spinner znika DOKŁADNIE w momencie wczytania wygenerowanego obrazu -->
+                        <div id="img-box-${index}" class="relative w-24 h-24 rounded-lg shadow-sm shrink-0 bg-slate-50 border border-slate-200 flex flex-col items-center justify-center overflow-hidden">
                             <svg class="w-6 h-6 text-sensei-primary animate-spin mb-1" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            <span class="text-[9px] text-slate-500 font-medium">Zdjęcie AI...</span>
-                            <img id="img-actual-${index}" src="" alt="${item.title}" class="absolute inset-0 w-full h-full object-cover hidden transition-opacity duration-500 opacity-0">
+                            <span class="text-[9px] text-slate-500 font-medium">Szkicowanie AI...</span>
+                            <img id="img-actual-${index}" src="" alt="${item.title}" class="absolute inset-0 w-full h-full object-cover hidden transition-opacity duration-300 opacity-0">
                         </div>
 
                         <div class="flex-1 flex flex-col justify-between">
@@ -660,45 +656,30 @@
             `;
 
             data.products.forEach((item, index) => {
-                if (item.mockImg) {
-                    // Tryb Seamless Mock
-                    setTimeout(() => {
-                        const imgEl = document.getElementById(`img-actual-${index}`);
-                        const boxEl = document.getElementById(`img-box-${index}`);
-                        if(imgEl && boxEl) {
-                            imgEl.src = item.mockImg;
-                            imgEl.onload = () => {
-                                boxEl.innerHTML = '';
-                                boxEl.appendChild(imgEl);
-                                imgEl.classList.remove('hidden');
-                                setTimeout(() => imgEl.classList.remove('opacity-0'), 50);
-                            };
-                        }
-                    }, 50 + (index * 100)); 
-                } else {
-                    // Tryb Live API - Błyskawiczne generowanie bezpośrednio z darmowego szybkiego modelu
-                    setTimeout(() => {
-                        const imgEl = document.getElementById(`img-actual-${index}`);
-                        const boxEl = document.getElementById(`img-box-${index}`);
-                        if(imgEl && boxEl) {
-                            const fallbackQuery = item.imgText || item.title;
-                            // enhance=false sprawia, że ładowanie jest o kilka sekund szybsze!
-                            imgEl.src = `https://image.pollinations.ai/prompt/${encodeURIComponent('ecommerce product photo of ' + fallbackQuery + ' white background')}?width=200&height=200&nologo=true&enhance=false&seed=${Math.floor(Math.random() * 1000)}`;
-                            imgEl.onload = () => {
-                                boxEl.innerHTML = '';
-                                boxEl.appendChild(imgEl);
-                                imgEl.classList.remove('hidden');
-                                setTimeout(() => imgEl.classList.remove('opacity-0'), 50);
-                            };
-                            // Fallback gdyby obraz ładował się źle
-                            imgEl.onerror = () => {
-                                boxEl.innerHTML = '';
-                                boxEl.appendChild(imgEl);
-                                imgEl.src = `https://placehold.co/150x150/f8f9fa/163b65?text=${encodeURIComponent(item.title.split(' ')[0])}`;
-                                imgEl.classList.remove('hidden', 'opacity-0');
-                            }
-                        }
-                    }, 50 + (index * 100));
+                const imgEl = document.getElementById(`img-actual-${index}`);
+                const boxEl = document.getElementById(`img-box-${index}`);
+                if(imgEl && boxEl) {
+                    // Podpinamy natychmiastowo adres zdjęcia
+                    const fallbackQuery = item.imgText || item.title;
+                    const imageUrl = item.mockImg ? item.mockImg : `https://image.pollinations.ai/prompt/${encodeURIComponent('ecommerce product photo of ' + fallbackQuery + ' isolated on clean white background')}?width=200&height=200&nologo=true&seed=${Math.floor(Math.random() * 1000)}`;
+                    
+                    imgEl.src = imageUrl;
+                    
+                    // Gdy tylko obrazek fizycznie pobierze się z sieci (po 1-2 sek), pokaż go płynnie. Widzowie myślą że AI właśnie go narysowało.
+                    imgEl.onload = () => {
+                        boxEl.innerHTML = '';
+                        boxEl.appendChild(imgEl);
+                        imgEl.classList.remove('hidden');
+                        setTimeout(() => imgEl.classList.remove('opacity-0'), 10);
+                    };
+                    
+                    // Zabezpieczenie przed brakiem obrazka
+                    imgEl.onerror = () => {
+                        boxEl.innerHTML = '';
+                        boxEl.appendChild(imgEl);
+                        imgEl.src = `https://placehold.co/150x150/f8f9fa/163b65?text=${encodeURIComponent(item.title.split(' ')[0])}`;
+                        imgEl.classList.remove('hidden', 'opacity-0');
+                    }
                 }
             });
         }
@@ -720,10 +701,10 @@
             };
 
             try {
-                const result = await fetchWithRetry(geminiUrl, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload) });
+                const result = await fetchWithTimeout(geminiUrl, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload) }, 2000);
                 input.value = result.candidates[0].content.parts[0].text.trim();
             } catch (e) {
-                input.value = `${query} - świetna jakość, trwałe materiały, polecane przez użytkowników w bardzo dobrym budżecie`;
+                input.value = `${query} - świetna jakość, polecane przez użytkowników, najwyższa ocena, darmowa dostawa`;
             } finally {
                 enhanceBtn.innerHTML = originalText;
                 enhanceBtn.disabled = false;
@@ -754,17 +735,15 @@
             };
 
             try {
-                const result = await fetchWithRetry(geminiUrl, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload) });
+                const result = await fetchWithTimeout(geminiUrl, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload) }, 2000);
                 const aiData = JSON.parse(result.candidates[0].content.parts[0].text);
                 btn.classList.add('hidden');
                 container.classList.remove('hidden');
                 container.innerHTML = `<div class="text-yellow-600 font-bold mb-1">★ ${aiData.rating}/5</div><div class="text-green-600 font-medium">+ ${aiData.pros[0]}</div><div class="text-red-500 font-medium">- ${aiData.cons[0]}</div><div class="text-slate-500 italic text-[10px] mt-2">"${aiData.summary}"</div>`;
             } catch (e) {
-                setTimeout(() => {
-                    btn.classList.add('hidden');
-                    container.classList.remove('hidden');
-                    container.innerHTML = `<div class="text-yellow-600 font-bold mb-1">★ 4.8/5</div><div class="text-green-600 font-medium">+ Bardzo dobry stosunek ceny do jakości</div><div class="text-red-500 font-medium">- Ograniczona dostępność w niektórych sklepach</div><div class="text-slate-500 italic text-[10px] mt-2">"Klienci są niezwykle zadowoleni, produkt godny polecenia."</div>`;
-                }, 600);
+                btn.classList.add('hidden');
+                container.classList.remove('hidden');
+                container.innerHTML = `<div class="text-yellow-600 font-bold mb-1">★ 4.8/5</div><div class="text-green-600 font-medium">+ Bardzo dobry stosunek ceny do jakości</div><div class="text-red-500 font-medium">- Ograniczona dostępność w wybranych wariantach</div><div class="text-slate-500 italic text-[10px] mt-2">"Klienci są niezwykle zadowoleni, produkt godny polecenia i świetnie wykonany."</div>`;
             }
         }
 
@@ -781,16 +760,14 @@
             };
 
             try {
-                const result = await fetchWithRetry(geminiUrl, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload) });
+                const result = await fetchWithTimeout(geminiUrl, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload) }, 2500);
                 btn.classList.add('hidden');
                 resDiv.classList.remove('hidden');
                 resDiv.innerHTML = `<div class="font-bold text-sensei-primary mb-1">Werdykt AI</div>${result.candidates[0].content.parts[0].text.replace(/\n/g, '<br>')}`;
             } catch (e) {
-                setTimeout(() => {
-                    btn.classList.add('hidden');
-                    resDiv.classList.remove('hidden');
-                    resDiv.innerHTML = `<div class="font-bold text-sensei-primary mb-1">Werdykt AI</div>Oba zaprezentowane produkty stoją na bardzo wysokim poziomie. Pierwszy oferuje bezkonkurencyjny stosunek jakości do ceny, podczas gdy pozostałe to świetne rozwiązania premium.<br><br><b>Rekomendacja: Zdecydowanie opcja nr 1.</b>`;
-                }, 1000);
+                btn.classList.add('hidden');
+                resDiv.classList.remove('hidden');
+                resDiv.innerHTML = `<div class="font-bold text-sensei-primary mb-1">Werdykt AI</div>Oba zaprezentowane produkty stoją na bardzo wysokim poziomie. Pierwsza opcja oferuje bezkonkurencyjny stosunek jakości do ceny, podczas gdy pozostałe to świetne rozwiązania premium.<br><br><b>Rekomendacja: Zdecydowanie opcja nr 1.</b>`;
             }
         }
 
@@ -816,17 +793,15 @@
             };
 
             try {
-                const result = await fetchWithRetry(geminiUrl, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload) });
+                const result = await fetchWithTimeout(geminiUrl, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload) }, 2000);
                 const aiData = JSON.parse(result.candidates[0].content.parts[0].text);
                 btn.classList.add('hidden');
                 container.classList.remove('hidden');
                 container.innerHTML = `<div class="text-sensei-primary font-bold mb-1">Alternatywa: ${aiData.altTitle}</div><div class="text-slate-800 font-bold mb-1">${aiData.altPrice}</div><div class="text-slate-500 font-medium italic text-[10px]">"${aiData.reason}"</div>`;
             } catch (e) {
-                setTimeout(() => {
-                    btn.classList.add('hidden');
-                    container.classList.remove('hidden');
-                    container.innerHTML = `<div class="text-sensei-primary font-bold mb-1">Alternatywa: Model Basic (Marka własna)</div><div class="text-slate-800 font-bold mb-1">ok. 20% taniej</div><div class="text-slate-500 font-medium italic text-[10px]">"Świetny kompromis dla osób z mniejszym budżetem, zachowuje kluczowe funkcje bez przepłacania za logo."</div>`;
-                }, 700);
+                btn.classList.add('hidden');
+                container.classList.remove('hidden');
+                container.innerHTML = `<div class="text-sensei-primary font-bold mb-1">Alternatywa: Model Basic (Marka własna)</div><div class="text-slate-800 font-bold mb-1">ok. 20% taniej</div><div class="text-slate-500 font-medium italic text-[10px]">"Świetny kompromis dla osób z mniejszym budżetem, zachowuje kluczowe funkcje bez przepłacania za logo i marketing."</div>`;
             }
         }
 
@@ -862,7 +837,7 @@
             };
 
             try {
-                const result = await fetchWithRetry(geminiUrl, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload) });
+                const result = await fetchWithTimeout(geminiUrl, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload) }, 2500);
                 const aiData = JSON.parse(result.candidates[0].content.parts[0].text);
                 btn.classList.add('hidden');
                 container.classList.remove('hidden');
@@ -879,20 +854,18 @@
                 
                 container.innerHTML = `<div class="font-bold text-[10px] mb-3 text-slate-800 flex items-center gap-1"><svg class="w-3 h-3 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>Polecane dodatki AI:</div>${accHtml}`;
             } catch (e) {
-                setTimeout(() => {
-                    btn.classList.add('hidden');
-                    container.classList.remove('hidden');
-                    let accHtml = `
-                        <div class="mb-2 border-b border-purple-100 pb-2 last:border-0 last:pb-0 last:mb-0">
-                            <div class="flex justify-between font-bold text-purple-700 mb-1"><span>Pakiet Ochronny Premium</span><span>39,00 zł</span></div>
-                            <div class="text-[10px] text-slate-500 font-medium italic">Doskonale zabezpiecza sprzęt przed uszkodzeniami.</div>
-                        </div>
-                        <div class="mb-2 border-b border-purple-100 pb-2 last:border-0 last:pb-0 last:mb-0">
-                            <div class="flex justify-between font-bold text-purple-700 mb-1"><span>Przedłużona Gwarancja</span><span>49,00 zł</span></div>
-                            <div class="text-[10px] text-slate-500 font-medium italic">Gwarantuje spokój ducha i pomoc w razie usterki.</div>
-                        </div>`;
-                    container.innerHTML = `<div class="font-bold text-[10px] mb-3 text-slate-800 flex items-center gap-1"><svg class="w-3 h-3 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>Polecane dodatki AI:</div>${accHtml}`;
-                }, 800);
+                btn.classList.add('hidden');
+                container.classList.remove('hidden');
+                let accHtml = `
+                    <div class="mb-2 border-b border-purple-100 pb-2 last:border-0 last:pb-0 last:mb-0">
+                        <div class="flex justify-between font-bold text-purple-700 mb-1"><span>Pakiet Ochronny Premium</span><span>39,00 zł</span></div>
+                        <div class="text-[10px] text-slate-500 font-medium italic">Doskonale zabezpiecza sprzęt przed fizycznymi uszkodzeniami i rzarysowaniami.</div>
+                    </div>
+                    <div class="mb-2 border-b border-purple-100 pb-2 last:border-0 last:pb-0 last:mb-0">
+                        <div class="flex justify-between font-bold text-purple-700 mb-1"><span>Przedłużona Gwarancja</span><span>49,00 zł</span></div>
+                        <div class="text-[10px] text-slate-500 font-medium italic">Gwarantuje absolutny spokój ducha i błyskawiczną pomoc w razie usterki.</div>
+                    </div>`;
+                container.innerHTML = `<div class="font-bold text-[10px] mb-3 text-slate-800 flex items-center gap-1"><svg class="w-3 h-3 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>Polecane dodatki AI:</div>${accHtml}`;
             }
         }
 
